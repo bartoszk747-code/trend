@@ -17,6 +17,7 @@ class BaseMarketplaceClient(ABC):
         max_price: float | None = None,
         size: str | None = None,
         brand: str | None = None,
+        category: str | None = None,
         limit: int = 40,
     ) -> List[Listing]:
         """Return a list of normalized Listing objects for this marketplace."""

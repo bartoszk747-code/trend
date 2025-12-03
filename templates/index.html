@@ -90,6 +90,18 @@
           </div>
 
           <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <select class="form-select" id="category" name="category">
+              <option value="" {% if not category %}selected{% endif %}>All Categories</option>
+              <option value="tops" {% if category == 'tops' %}selected{% endif %}>Tops</option>
+              <option value="bottoms" {% if category == 'bottoms' %}selected{% endif %}>Bottoms</option>
+              <option value="outerwear" {% if category == 'outerwear' %}selected{% endif %}>Outerwear</option>
+              <option value="footwear" {% if category == 'footwear' %}selected{% endif %}>Footwear</option>
+              <option value="accessories" {% if category == 'accessories' %}selected{% endif %}>Accessories</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
             <label class="form-label">Marketplaces</label>
             <div class="row">
               {% set all_sites = [

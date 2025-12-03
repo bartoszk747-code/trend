@@ -15,6 +15,7 @@ class FacebookMarketplaceClientFake(BaseMarketplaceClient):
         query: str,
         min_price: float | None = None,
         max_price: float | None = None,
+        category: str | None = None,
         limit: int = 50,
         **kwargs,
     ) -> List[Listing]:
@@ -25,7 +26,7 @@ class FacebookMarketplaceClientFake(BaseMarketplaceClient):
         with price changes, so you can demo price-drop & trend features.
         """
 
-        print("⚠ Using FAKE Facebook Marketplace data (simulated).")
+        print("Using FAKE Facebook Marketplace data (simulated).")
 
         # Hard-coded time series for two cars
         # Dates are just example ISO strings; you'll use created_at for trend graphs.

@@ -1,3 +1,9 @@
+"""
+Demo script to showcase the functionality of various marketplace clients.
+This script initializes the database and runs search queries across different platforms
+(Grailed, Mercari, Depop, Poshmark, Facebook Marketplace) to demonstrate data retrieval.
+"""
+
 from trend.api_clients.grailed_client import GrailedClient
 from trend.api_clients.mercari_us_client import MercariUSClient
 from trend.api_clients.depop_client_fake import DepopClientFake
@@ -7,72 +13,82 @@ from trend.db import init_db
 
 
 def main():
-    print("Running script...")
+    """
+    Main execution function.
+    Runs a sequence of searches on different marketplaces and prints the results.
+    """
+    print("Starting the demo script...")
 
+    # Ensure the database is set up before we begin (though we aren't saving results here yet)
     init_db()
 
     # --- GRAILED ---
+    # Real API client (wrapper around unofficial API)
+    print("\n--- Searching Grailed (Real API) ---")
     client = GrailedClient()
-    print("Searching Grailed...")
     results = client.search("jacket", limit=3)
 
-    print(f"Grailed results found: {len(results)}")
+    print(f"Found {len(results)} items on Grailed:")
     for r in results:
-        print("----------")
-        print("Site: Grailed")
-        print("Title:", r.title)
-        print("Price:", r.price, r.currency)
-        print("URL:", r.url)
+        print("-" * 20)
+        print(f"Title: {r.title}")
+        print(f"Price: {r.price} {r.currency}")
+        print(f"Link:  {r.url}")
 
     # --- MERCARI US (FAKE) ---
-    print("\n--- Mercari US (FAKE) ---")
+    # Simulated client for development
+    print("\n--- Searching Mercari US (Simulated) ---")
     merc_us = MercariUSClient()
     mus_results = merc_us.search("jacket", limit=5)
-    print(f"Mercari US results found: {len(mus_results)}")
+    print(f"Found {len(mus_results)} simulated items on Mercari US:")
 
     for item in mus_results:
-        print("----------")
-        print("Site: Mercari US (simulated)")
+        print("-" * 20)
         print(f"Title: {item.title}")
         print(f"Price: {item.price} {item.currency}")
-        print(f"URL: {item.url}")
+        print(f"Link:  {item.url}")
 
-        # --- DEPOP (FAKE) ---
-    print("\n--- Depop (FAKE) ---")
+    # --- DEPOP (FAKE) ---
+    # Simulated client for development
+    print("\n--- Searching Depop (Simulated) ---")
     depop = DepopClientFake()
     depop_results = depop.search("jacket", limit=5)
-    print(f"Depop results found: {len(depop_results)}")
+    print(f"Found {len(depop_results)} simulated items on Depop:")
+    
     for item in depop_results:
-        print("----------")
-        print("Site: Depop (simulated)")
+        print("-" * 20)
         print(f"Title: {item.title}")
         print(f"Price: {item.price} {item.currency}")
-        print(f"URL: {item.url}")
+        print(f"Link:  {item.url}")
 
     # --- POSHMARK (FAKE) ---
-    print("\n--- Poshmark (FAKE) ---")
+    # Simulated client for development
+    print("\n--- Searching Poshmark (Simulated) ---")
     posh = PoshmarkClientFake()
     posh_results = posh.search("jacket", limit=5)
-    print(f"Poshmark results found: {len(posh_results)}")
+    print(f"Found {len(posh_results)} simulated items on Poshmark:")
+    
     for item in posh_results:
-        print("----------")
-        print("Site: Poshmark (simulated)")
+        print("-" * 20)
         print(f"Title: {item.title}")
         print(f"Price: {item.price} {item.currency}")
-        print(f"URL: {item.url}")
+        print(f"Link:  {item.url}")
 
     # --- FACEBOOK MARKETPLACE (FAKE BMWs) ---
-    print("\n--- Facebook Marketplace (FAKE BMW DATA) ---")
+    # Simulated client specifically tuned for cars/BMWs in this demo
+    print("\n--- Searching Facebook Marketplace (Simulated BMW Data) ---")
     fb = FacebookMarketplaceClientFake()
     fb_results = fb.search("BMW", limit=20)
-    print(f"Facebook BMW results found: {len(fb_results)}")
+    print(f"Found {len(fb_results)} simulated BMW listings:")
+    
     for item in fb_results:
-        print("----------")
-        print("Site: Facebook Marketplace (simulated)")
+        print("-" * 20)
         print(f"Title: {item.title}")
         print(f"Price: {item.price} {item.currency}")
-        print(f"URL: {item.url}")
-        print(f"Date: {item.created_at}")
+        print(f"Date:  {item.created_at}")
+        print(f"Link:  {item.url}")
+
+    print("\nDemo completed successfully.")
 
 
 if __name__ == "__main__":
