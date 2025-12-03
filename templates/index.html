@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>TrendTracker – Multi-Marketplace Search</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap 5 CDN -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <style>
+    body {
+      background-color: #0f172a; /* dark navy */
+      color: #e5e7eb;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .navbar {
+      background: linear-gradient(90deg, #1e293b, #0f172a);
+    }
+    .brand-accent {
+      color: #38bdf8;
+    }
+    .card {
+      background-color: #020617;
+      border-radius: 18px;
+      border: 1px solid #1f2937;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+      transition: all .15s ease-out;
+    }
+    .badge-site {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .site-grailed { background-color: #fbbf24; color: #111827; }
+    .site-mercari_us { background-color: #38bdf8; color: #0f172a; }
+    .site-depop { background-color: #ef4444; color: #0b1120; }
+    .site-poshmark { background-color: #a855f7; color: #f9fafb; }
+    .site-facebook_marketplace { background-color: #3b82f6; color: #f9fafb; }
+    .stat-card {
+      background-color: #020617;
+      border-radius: 18px;
+      border: 1px solid #1f2937;
+    }
+    .form-check-label {
+      font-size: 0.9rem;
+    }
+    a.link-light {
+      text-decoration: none;
+    }
+    a.link-light:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-dark mb-4">
+  <div class="container-fluid">
+    <span class="navbar-brand mb-0 h1">
+      Trend<span class="brand-accent">Tracker</span>
+    </span>
+  </div>
+</nav>
+
+<div class="container mb-5">
+
+  <!-- Search Panel -->
+  <div class="row mb-4">
+    <div class="col-lg-8 mx-auto">
+      <div class="card p-4">
+        <h4 class="mb-3">Search resale marketplaces</h4>
+        <form method="POST">
+          <div class="mb-3">
+            <label for="query" class="form-label">What are you hunting for?</label>
+            <input
+              type="text"
+              class="form-control"
+              id="query"
+              name="query"
+              placeholder="e.g. vintage carhartt jacket, BMW Z4M, y2k hoodie"
+              value="{{ query }}"
+              required
+            >
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Marketplaces</label>
+            <div class="row">
+              {% set all_sites = [
+                ('grailed', 'Grailed'),
+                ('mercari_us', 'Mercari US (simulated)'),
+                ('depop', 'Depop (simulated)'),
+                ('poshmark', 'Poshmark (simulated)'),
+                ('facebook_marketplace', 'Facebook Marketplace BMWs (simulated)')
+              ] %}
+              {% for value, label in all_sites %}
+              <div class="col-6 col-md-4 mb-1">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="sites"
+                    id="site-{{ value }}"
+                    value="{{ value }}"
+                    {% if value in selected_sites %}checked{% endif %}
+                  >
+                  <label class="form-check-label" for="site-{{ value }}">
+                    {{ label }}
+                  </label>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            🔍 Search
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {% if stats %}
+  <!-- Stats Row -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="stat-card p-3 h-100">
+        <small class="text-secondary text-uppercase">Total listings</small>
+        <h3 class="mt-2">{{ stats.total }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="stat-card p-3 h-100">
+        <small class="text-secondary text-uppercase">Avg price (overall)</small>
+        {% if stats.avg_price_overall %}
+          <h3 class="mt-2">${{ "%.2f"|format(stats.avg_price_overall) }}</h3>
+        {% else %}
+          <h3 class="mt-2">–</h3>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-md-6 mb-3">
+      <div class="stat-card p-3 h-100">
+        <small class="text-secondary text-uppercase">Avg price by site</small>
+        <div class="mt-2">
+          {% for site, avg in stats.avg_price_by_site.items() %}
+            <span class="badge bg-secondary me-1">
+              {{ site }}: ${{ "%.2f"|format(avg) }}
+            </span>
+          {% endfor %}
+          {% if not stats.avg_price_by_site %}
+            <span class="text-secondary">No price data.</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if stats.cheapest %}
+  <div class="row mb-4">
+    <div class="col-lg-8">
+      <div class="stat-card p-3">
+        <small class="text-secondary text-uppercase">Cheapest listing found</small>
+        <div class="mt-2 d-flex justify-content-between flex-wrap">
+          <div>
+            <div><strong>{{ stats.cheapest.title }}</strong></div>
+            <div class="text-secondary" style="font-size: 0.9rem;">
+              Site: {{ stats.cheapest.site }}
+            </div>
+          </div>
+          <div class="text-end">
+            <div class="fs-4">
+              {{ stats.cheapest.currency }} {{ "%.2f"|format(stats.cheapest.price) }}
+            </div>
+            {% if stats.cheapest.url %}
+              <a href="{{ stats.cheapest.url }}" target="_blank" class="link-light">
+                View listing ⤴
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  <!-- Results by Site -->
+  {% for site, items in grouped_results.items() %}
+  <div class="row mb-3">
+    <div class="col-12">
+      <h5 class="mb-3">
+        {% if site == 'grailed' %}Grailed{% endif %}
+        {% if site == 'mercari_us' %}Mercari US (simulated){% endif %}
+        {% if site == 'depop' %}Depop (simulated){% endif %}
+        {% if site == 'poshmark' %}Poshmark (simulated){% endif %}
+        {% if site == 'facebook_marketplace' %}Facebook Marketplace (simulated BMW data){% endif %}
+        <span class="badge rounded-pill bg-secondary ms-2">{{ items|length }} results</span>
+      </h5>
+    </div>
+
+    {% for item in items %}
+    <div class="col-md-6 col-lg-4 mb-3">
+      <div class="card p-3 h-100">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span
+            class="badge badge-site
+              {% if site == 'grailed' %}site-grailed{% endif %}
+              {% if site == 'mercari_us' %}site-mercari_us{% endif %}
+              {% if site == 'depop' %}site-depop{% endif %}
+              {% if site == 'poshmark' %}site-poshmark{% endif %}
+              {% if site == 'facebook_marketplace' %}site-facebook_marketplace{% endif %}
+            "
+          >
+            {{ site }}
+          </span>
+          {% if item.brand %}
+            <span class="text-secondary" style="font-size: 0.8rem;">
+              {{ item.brand }}
+            </span>
+          {% endif %}
+        </div>
+        <h6 class="mb-2">{{ item.title }}</h6>
+        <div class="mb-2">
+          <strong>
+            {{ item.currency }} {{ "%.2f"|format(item.price) if item.price is not none else "–" }}
+          </strong>
+        </div>
+        <div class="mb-1" style="font-size: 0.85rem;">
+          {% if item.size %}
+            <span class="me-2 text-secondary">Size: {{ item.size }}</span>
+          {% endif %}
+          {% if item.condition %}
+            <span class="text-secondary">Condition: {{ item.condition }}</span>
+          {% endif %}
+        </div>
+        {% if item.created_at %}
+        <div class="mb-2 text-secondary" style="font-size: 0.75rem;">
+          Listed: {{ item.created_at.strftime("%Y-%m-%d") }}
+        </div>
+        {% endif %}
+        <div class="mt-auto">
+          {% if item.url %}
+          <a href="{{ item.url }}" target="_blank" class="btn btn-sm btn-outline-light">
+            View listing
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
