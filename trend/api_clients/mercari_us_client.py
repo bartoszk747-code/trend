@@ -9,78 +9,37 @@ from ..models import Listing
 class MercariUSClient(BaseMarketplaceClient):
     site_name = "mercari_us"
 
-    def __init__(self):
-        pass
+    def search(self, query, min_price=None, max_price=None, limit=10, **kwargs):
+        # fake data generator for mercari
+        print(f"DEBUG: getting fake mercari listings for {query}")
 
-    def search(
-        self,
-        query: str,
-        min_price: float | None = None,
-        max_price: float | None = None,
-        limit: int = 10,
-        **kwargs
-    ) -> List[Listing]:
-        """
-        Fake / simulated Mercari US client.
-        Generates realistic-looking demo data so the app behaves
-        as if it's talking to Mercari US.
-        """
-
-        print("⚠ Using FAKE Mercari US data (simulated).")
-
-        base_titles = [
-            "Vintage {} Jacket",
-            "{} Puffer Jacket",
-            "Y2K {} Zip-Up Hoodie",
-            "{} Workwear Coat",
-            "Oversized {} Fleece",
+        titles = [
+            "Vintage {} Jacket", "{} Puffer Jacket", "Y2K {} Zip-Up Hoodie",
+            "{} Workwear Coat", "Oversized {} Fleece"
         ]
 
-        brands = [
-            "Carhartt",
-            "Nike",
-            "Adidas",
-            "The North Face",
-            "Columbia",
-            "Patagonia",
-            "No Brand",
-        ]
+        brands = ["Carhartt", "Nike", "Adidas", "The North Face", "Columbia", "Patagonia"]
 
-        sizes = ["XS", "S", "M", "L", "XL", "XXL"]
-
-        conditions = [
-            "New with tags",
-            "New without tags",
-            "Good",
-            "Fair",
-            "Used",
-        ]
-
-        listings: List[Listing] = []
-
+        items = []
         for i in range(limit):
-            title = random.choice(base_titles).format(query.capitalize())
-            brand = random.choice(brands)
-            size = random.choice(sizes)
-            condition = random.choice(conditions)
+            t = random.choice(titles).format(query.capitalize())
+            
+            # random price/date
+            p = random.randint(20, 250)
+            dt = datetime.utcnow() - timedelta(days=random.randint(0, 30))
 
-            price = random.randint(20, 250)  # USD
-            created_at = datetime.utcnow() - timedelta(days=random.randint(0, 30))
+            items.append(Listing(
+                site="mercari_us",
+                listing_id=f"fake-mus-{i}",
+                title=t,
+                price=float(p),
+                currency="USD",
+                url=f"https://www.mercari.com/us/item/fake-mus-{i}/",
+                brand=random.choice(brands),
+                size=random.choice(["XS", "S", "M", "L", "XL", "XXL"]),
+                condition=random.choice(["New", "Good", "Fair", "Used"]),
+                image_url=None,
+                created_at=dt,
+            ))
 
-            listings.append(
-                Listing(
-                    site="mercari_us",
-                    listing_id=f"fake-mus-{i}",
-                    title=title,
-                    price=float(price),
-                    currency="USD",
-                    url=f"https://www.mercari.com/us/item/fake-mus-{i}/",
-                    brand=brand,
-                    size=size,
-                    condition=condition,
-                    image_url=None,
-                    created_at=created_at,
-                )
-            )
-
-        return listings
+        return items
