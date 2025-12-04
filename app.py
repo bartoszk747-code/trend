@@ -17,6 +17,10 @@ from trend.api_clients.facebook_marketplace_client_fake import FacebookMarketpla
 from trend.db import init_db
 from trend.models import Listing
 
+# tiny helper that hits the DB for a rough "market" average
+# (make sure trend/price_stats.py exists – see below)
+from trend.price_stats import average_price_for_query
+
 print(">>> importing app.py")
 app = Flask(__name__)
 
@@ -160,7 +164,7 @@ def compute_stats(listings: List[Listing]):
 
     by_site_counts = defaultdict(int)
     by_site_prices = defaultdict(list)
-    
+
     for l in listings:
         by_site_counts[l.site] += 1
         if l.price and l.price > 0:
@@ -277,7 +281,7 @@ def watch():
                     "tags": tags,
                     "max_price": max_price,
                     "sites": selected_sites,
-                    "seen_ids": set(), # track what we've already notified about
+                    "seen_ids": set(),  # track what we've already notified about
                 }
             )
             _next_watch_id += 1
@@ -422,50 +426,85 @@ def watch_add():
 
 @app.route("/analytics")
 def analytics():
-    # Prepare data for charts
-    rule_labels = []
-    rule_avg_prices = []
-    rule_price_drops = []
-    trend_points = []
+    """
+    New analytics endpoint:
+      - One accordion card per watch rule
+      - For each rule: stats, lowest price, DB historical avg
+      - Trend data with: line+dots for “main” listing, dots for everything else (BaT style)
+    """
+
+    rule_blocks = []   # this becomes `rules` in analytics.html
 
     for rule in watch_rules:
+        # always pull fresh matches so analytics feels "live"
         matches = get_rule_matches(rule)
         stats = compute_stats(matches)
 
-        if stats["avg_price_overall"]:
-            rule_labels.append(rule["query"])
-            rule_avg_prices.append(stats["avg_price_overall"])
+        # cheapest from the stats helper
+        lowest_listing = stats.get("cheapest")
+        lowest_price = lowest_listing.price if lowest_listing else None
+        lowest_currency = lowest_listing.currency if lowest_listing else None
 
-        # Only entries that have a datetime and a price
+        # optional "market" average from the DB
+        try:
+            historical_avg = average_price_for_query(rule["query"])
+        except Exception as e:
+            print("average_price_for_query failed:", e)
+            historical_avg = None
+
+        # only entries that actually have a datetime and a price
         dated = [m for m in matches if m.created_at and m.price]
 
-        if len(dated) >= 2:
-            # Sort by date to calculate drop
-            dated_sorted = sorted(dated, key=lambda x: x.created_at.isoformat())
-            drop = round(dated_sorted[0].price - dated_sorted[-1].price, 2)
-            rule_price_drops.append(drop)
-        else:
-            rule_price_drops.append(0)
+        # sort by date so the charts don't jump around
+        dated_sorted = sorted(dated, key=lambda m: m.created_at.isoformat())
 
-        for m in dated:
+        # treat the original query text as the "main" listing's title
+        q_norm = (rule["query"] or "").strip().lower()
+
+        def is_main_listing(listing):
+            title_norm = (listing.title or "").strip().lower()
+            return title_norm == q_norm
+
+        # build chart points
+        trend_points = []
+        for m in dated_sorted:
             trend_points.append({
-                "rule": rule["query"],
                 "title": m.title,
                 "date": m.created_at.isoformat(),
                 "price": m.price,
+                "site": m.site,
+                "is_main": bool(is_main_listing(m)),
             })
 
-    # Sort trend points by date string for the chart
-    trend_points.sort(key=lambda x: x["date"])
+        # average change per week for the main listing, if we have at least 2 data points
+        avg_change_per_week = None
+        main_points = [m for m in dated_sorted if is_main_listing(m)]
 
-    analytics_data = {
-        "labels": rule_labels,
-        "avg_prices": rule_avg_prices,
-        "price_drops": rule_price_drops,
-        "trend_points": trend_points,
-    }
+        if len(main_points) >= 2:
+            first = main_points[0]
+            last = main_points[-1]
+            days = (last.created_at - first.created_at).days
+            if days != 0:
+                weeks = days / 7.0
+                if weeks > 0:
+                    change = last.price - first.price
+                    avg_change_per_week = round(change / weeks, 2)
 
-    return render_template("analytics.html", analytics_data=analytics_data)
+        # pack everything into one dict per rule
+        rule_blocks.append({
+            "id": rule["id"],
+            "query": rule["query"],
+            "sites": rule.get("sites", []),
+            "tags": rule.get("tags", []),
+            "stats": stats,
+            "lowest_price": lowest_price,
+            "lowest_currency": lowest_currency,
+            "historical_avg": historical_avg,
+            "avg_change_per_week": avg_change_per_week,
+            "trend_points": trend_points,
+        })
+
+    return render_template("analytics.html", rules=rule_blocks)
 
 
 @app.route("/profile")
