@@ -9,74 +9,34 @@ from ..models import Listing
 class DepopClientFake(BaseMarketplaceClient):
     site_name = "depop"
 
-    def __init__(self):
-        pass
+    def search(self, query, min_price=None, max_price=None, limit=20, **kwargs):
+        # TODO: implement real scraping later
+        print("generating fake depop items...")
 
-    def search(
-        self,
-        query: str,
-        min_price: float | None = None,
-        max_price: float | None = None,
-        limit: int = 20,
-        **kwargs,
-    ) -> List[Listing]:
-        """
-        Fake Depop client.
-        Generates realistic Depop-style listings.
-        """
-
-        print("⚠ Using FAKE Depop data (simulated).")
-
-        base_titles = [
-            "Y2K {} Baby Tee",
-            "Vintage {} Graphic Tee",
-            "{} Cargo Pants",
-            "90s {} Sweatshirt",
-            "{} Mini Skirt",
-            "Vintage {} Track Jacket",
+        # y2k stuff usually
+        templates = [
+            "Y2K {} Baby Tee", "Vintage {} Graphic Tee", "{} Cargo Pants",
+            "90s {} Sweatshirt", "{} Mini Skirt", "Vintage {} Track Jacket"
         ]
 
-        brands = [
-            "Brandy Melville",
-            "Nike",
-            "Adidas",
-            "Harley Davidson",
-            "Juicy Couture",
-            "No Brand",
-        ]
-        sizes = ["XS", "S", "M", "L", "XL", "One Size"]
-        conditions = [
-            "Used - good",
-            "Used - excellent",
-            "New with tags",
-            "New without tags",
-        ]
-
-        listings: List[Listing] = []
-
+        brands = ["Brandy Melville", "Nike", "Adidas", "Harley Davidson", "Juicy Couture"]
+        
+        out = []
         for i in range(limit):
-            title = random.choice(base_titles).format(query.capitalize())
-            brand = random.choice(brands)
-            size = random.choice(sizes)
-            condition = random.choice(conditions)
+            t = random.choice(templates).format(query.capitalize())
+            
+            out.append(Listing(
+                site="depop",
+                listing_id=f"fake-depop-{i}",
+                title=t,
+                price=float(random.randint(15, 120)),
+                currency="USD",
+                url=f"https://www.depop.com/products/fake-depop-{i}/",
+                brand=random.choice(brands),
+                size=random.choice(["XS", "S", "M", "L", "XL", "One Size"]),
+                condition=random.choice(["Used - good", "Used - excellent", "NWT"]),
+                image_url=None,
+                created_at=datetime.utcnow() - timedelta(days=random.randint(0, 30)),
+            ))
 
-            price = random.randint(15, 120)
-            created_at = datetime.utcnow() - timedelta(days=random.randint(0, 30))
-
-            listings.append(
-                Listing(
-                    site="depop",
-                    listing_id=f"fake-depop-{i}",
-                    title=title,
-                    price=float(price),
-                    currency="USD",
-                    url=f"https://www.depop.com/products/fake-depop-{i}/",
-                    brand=brand,
-                    size=size,
-                    condition=condition,
-                    image_url=None,
-                    created_at=created_at,
-                )
-            )
-
-        return listings
+        return out

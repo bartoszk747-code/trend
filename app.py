@@ -1,9 +1,13 @@
+# Main application entry point
+# Handles routing, search logic, and basic user session stuff (mocked for now)
+
 from collections import defaultdict
 from statistics import mean
 from typing import List
 
 from flask import Flask, render_template, request, abort, redirect, url_for
 
+# Import our API clients - some are real, some are fake/simulated
 from trend.api_clients.grailed_client import GrailedClient
 from trend.api_clients.mercari_us_client import MercariUSClient
 from trend.api_clients.depop_client_fake import DepopClientFake
@@ -20,6 +24,7 @@ app = Flask(__name__)
 # INITIALIZATION
 # -------------------------------------
 
+# Initialize DB and clients
 init_db()
 grailed_client = GrailedClient()
 mercari_us_client = MercariUSClient()
@@ -27,9 +32,11 @@ depop_client = DepopClientFake()
 poshmark_client = PoshmarkClientFake()
 facebook_client = FacebookMarketplaceClientFake()
 
+# In-memory storage for watch rules (TODO: move to DB later)
 watch_rules: list[dict] = []
 _next_watch_id = 1
 
+# Mock user for demo purposes
 current_user = {
     "username": "demo_user",
     "email": "demo@trendtracker.app",
@@ -42,7 +49,10 @@ current_user = {
 # -------------------------------------
 
 def normalize_url(site: str, url: str | None) -> str | None:
-    """Ensure Grailed/Depop/Poshmark URLs are full HTTPS links."""
+    """
+    Helper to make sure we always have a valid clickable link.
+    Some APIs return relative paths.
+    """
     if not url:
         return None
 
@@ -62,8 +72,12 @@ def normalize_url(site: str, url: str | None) -> str | None:
 
 
 def run_search(query: str, selected_sites: List[str], limit: int = 20) -> List[Listing]:
+    """
+    Aggregates results from all selected marketplaces.
+    """
     all_results: List[Listing] = []
 
+    # Check which sites the user wants to search
     if "grailed" in selected_sites:
         all_results.extend(grailed_client.search(query, limit=limit))
     if "mercari_us" in selected_sites:
@@ -75,7 +89,7 @@ def run_search(query: str, selected_sites: List[str], limit: int = 20) -> List[L
     if "facebook_marketplace" in selected_sites:
         all_results.extend(facebook_client.search(query, limit=limit))
 
-    # Normalize URLs
+    # Fix up URLs before returning
     for r in all_results:
         r.url = normalize_url(r.site, getattr(r, "url", None))
 
@@ -84,18 +98,19 @@ def run_search(query: str, selected_sites: List[str], limit: int = 20) -> List[L
 
 def apply_filters(listings, tags=None, max_price=None):
     """
-    Filters:
-      - tags: OR logic (at least one tag must appear in title/brand/size)
-      - max_price: upper bound on price
+    Filters raw results based on user criteria.
+    - tags: simple keyword matching (OR logic)
+    - max_price: strict upper bound
     """
     if not listings:
         return []
 
+    # clean up tags
     tags = [t.lower().strip() for t in (tags or []) if t.strip()]
     filtered = []
 
     for l in listings:
-        # Build searchable text blob
+        # Combine all text fields for easier searching
         parts = [
             getattr(l, "title", "") or "",
             getattr(l, "brand", "") or "",
@@ -103,24 +118,25 @@ def apply_filters(listings, tags=None, max_price=None):
         ]
         text_raw = " ".join(parts).lower()
 
-        # Normalize by stripping weird chars
+        # Normalize text to handle weird spacing/punctuation
         text = "".join(ch for ch in text_raw if ch.isalnum() or ch.isspace())
         text_no_space = text.replace(" ", "")
 
-        # TAG FILTER: OR logic
+        # Check tags (if any)
         if tags:
             match_any = False
             for tag in tags:
                 t = "".join(ch for ch in tag.lower() if ch.isalnum())
                 if not t:
                     continue
+                # check both with and without spaces to be safe
                 if t in text or t in text_no_space:
                     match_any = True
                     break
             if not match_any:
                 continue
 
-        # PRICE FILTER
+        # Check price
         if max_price is not None and (l.price is None or l.price > max_price):
             continue
 
@@ -130,6 +146,9 @@ def apply_filters(listings, tags=None, max_price=None):
 
 
 def compute_stats(listings: List[Listing]):
+    """
+    Calculates basic stats for the dashboard/analytics view.
+    """
     if not listings:
         return {
             "total": 0,
@@ -141,11 +160,13 @@ def compute_stats(listings: List[Listing]):
 
     by_site_counts = defaultdict(int)
     by_site_prices = defaultdict(list)
+    
     for l in listings:
         by_site_counts[l.site] += 1
         if l.price and l.price > 0:
             by_site_prices[l.site].append(l.price)
 
+    # Calculate averages per site
     by_site_avg = {
         site: round(mean(prices), 2)
         for site, prices in by_site_prices.items()
@@ -168,6 +189,7 @@ def compute_stats(listings: List[Listing]):
 
 
 def get_rule_matches(rule: dict) -> list[Listing]:
+    # Helper to run a saved search rule
     raw = run_search(rule["query"], rule["sites"], limit=100)
     return apply_filters(raw, tags=rule["tags"], max_price=rule["max_price"])
 
@@ -178,6 +200,7 @@ def get_rule_matches(rule: dict) -> list[Listing]:
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    # Default values
     query = ""
     tags_input = ""
     max_price_input = ""
@@ -186,6 +209,7 @@ def index():
     stats = None
 
     if request.method == "POST":
+        # Get form data
         query = request.form.get("query", "").strip()
         tags_input = request.form.get("tags", "").strip()
         max_price_input = request.form.get("max_price", "").strip()
@@ -198,13 +222,16 @@ def index():
             try:
                 max_price = float(max_price_input)
             except ValueError:
+                # ignore invalid price input
                 max_price = None
 
         if query and selected_sites:
+            # Run the search!
             raw_results = run_search(query, selected_sites, limit=50)
             results = apply_filters(raw_results, tags=tags, max_price=max_price)
             stats = compute_stats(results)
 
+    # Group results by site for display
     grouped = defaultdict(list)
     for r in results:
         grouped[r.site].append(r)
@@ -226,7 +253,7 @@ def watch():
 
     message = None
 
-    # (Optional) manual creation if you ever add a form here again
+    # Handle new watch rule creation
     if request.method == "POST":
         query = request.form.get("query", "").strip()
         tags_input = request.form.get("tags", "").strip()
@@ -250,7 +277,7 @@ def watch():
                     "tags": tags,
                     "max_price": max_price,
                     "sites": selected_sites,
-                    "seen_ids": set(),
+                    "seen_ids": set(), # track what we've already notified about
                 }
             )
             _next_watch_id += 1
@@ -258,6 +285,7 @@ def watch():
         else:
             message = "Please provide a query and at least one site."
 
+    # Check for updates on existing rules
     notifications = []
     rule_summaries = []
 
@@ -287,13 +315,16 @@ def watch():
 
 @app.route("/watch/<int:rule_id>")
 def watch_detail(rule_id: int):
+    # Find the rule
     rule = next((r for r in watch_rules if r["id"] == rule_id), None)
     if not rule:
         abort(404)
 
+    # Get fresh results
     matches = get_rule_matches(rule)
     stats = compute_stats(matches)
 
+    # Sort by price (cheapest first)
     matches_sorted = sorted(
         matches,
         key=lambda x: (x.price if x.price is not None else 1e9)
@@ -328,6 +359,7 @@ def watch_edit(rule_id: int):
             except ValueError:
                 max_price = None
 
+        # Update rule in place
         if query:
             rule["query"] = query
         rule["tags"] = tags
@@ -356,6 +388,7 @@ def watch_edit(rule_id: int):
 
 @app.route("/watch_add", methods=["POST"])
 def watch_add():
+    # Quick add from the search results page
     global _next_watch_id
 
     item = request.form.to_dict()
@@ -389,6 +422,7 @@ def watch_add():
 
 @app.route("/analytics")
 def analytics():
+    # Prepare data for charts
     rule_labels = []
     rule_avg_prices = []
     rule_price_drops = []
@@ -406,7 +440,7 @@ def analytics():
         dated = [m for m in matches if m.created_at and m.price]
 
         if len(dated) >= 2:
-            # ✅ FIX: sort by isoformat() string to avoid naive/aware datetime comparison issues
+            # Sort by date to calculate drop
             dated_sorted = sorted(dated, key=lambda x: x.created_at.isoformat())
             drop = round(dated_sorted[0].price - dated_sorted[-1].price, 2)
             rule_price_drops.append(drop)
@@ -421,7 +455,7 @@ def analytics():
                 "price": m.price,
             })
 
-    # Sort trend points by date string
+    # Sort trend points by date string for the chart
     trend_points.sort(key=lambda x: x["date"])
 
     analytics_data = {
