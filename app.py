@@ -1,7 +1,8 @@
 from collections import defaultdict
 from statistics import mean
 from typing import List
-from flask import Flask, render_template, request, abort, redirect
+
+from flask import Flask, render_template, request, abort, redirect, url_for
 
 from trend.api_clients.grailed_client import GrailedClient
 from trend.api_clients.mercari_us_client import MercariUSClient
@@ -15,9 +16,9 @@ from trend.models import Listing
 print(">>> importing app.py")
 app = Flask(__name__)
 
-# ---------------------------------------------------------
+# -------------------------------------
 # INITIALIZATION
-# ---------------------------------------------------------
+# -------------------------------------
 
 init_db()
 grailed_client = GrailedClient()
@@ -27,7 +28,6 @@ poshmark_client = PoshmarkClientFake()
 facebook_client = FacebookMarketplaceClientFake()
 
 watch_rules: list[dict] = []
-analytics_items: list[dict] = []   # <-- NOW ADDED CORRECTLY
 _next_watch_id = 1
 
 current_user = {
@@ -36,18 +36,20 @@ current_user = {
     "plan": "Beta access",
 }
 
-# ---------------------------------------------------------
-# UTILITIES
-# ---------------------------------------------------------
 
-def normalize_url(site: str, url: str):
+# -------------------------------------
+# UTILITY FUNCTIONS
+# -------------------------------------
+
+def normalize_url(site: str, url: str | None) -> str | None:
+    """Ensure Grailed/Depop/Poshmark URLs are full HTTPS links."""
     if not url:
         return None
 
     if url.startswith("http"):
         return url
 
-    domains = {
+    site_domains = {
         "grailed": "https://www.grailed.com",
         "depop": "https://www.depop.com",
         "poshmark": "https://poshmark.com",
@@ -55,47 +57,70 @@ def normalize_url(site: str, url: str):
         "facebook_marketplace": "https://www.facebook.com",
     }
 
-    return domains.get(site, "") + url
+    base = site_domains.get(site, "")
+    return base + url
 
 
 def run_search(query: str, selected_sites: List[str], limit: int = 20) -> List[Listing]:
-    results = []
+    all_results: List[Listing] = []
 
     if "grailed" in selected_sites:
-        results.extend(grailed_client.search(query, limit=limit))
-
+        all_results.extend(grailed_client.search(query, limit=limit))
     if "mercari_us" in selected_sites:
-        results.extend(mercari_us_client.search(query, limit=limit))
-
+        all_results.extend(mercari_us_client.search(query, limit=limit))
     if "depop" in selected_sites:
-        results.extend(depop_client.search(query, limit=limit))
-
+        all_results.extend(depop_client.search(query, limit=limit))
     if "poshmark" in selected_sites:
-        results.extend(poshmark_client.search(query, limit=limit))
-
+        all_results.extend(poshmark_client.search(query, limit=limit))
     if "facebook_marketplace" in selected_sites:
-        results.extend(facebook_client.search(query, limit=limit))
+        all_results.extend(facebook_client.search(query, limit=limit))
 
     # Normalize URLs
-    for r in results:
-        r.url = normalize_url(r.site, r.url)
+    for r in all_results:
+        r.url = normalize_url(r.site, getattr(r, "url", None))
 
-    return results
+    return all_results
 
 
 def apply_filters(listings, tags=None, max_price=None):
+    """
+    Filters:
+      - tags: OR logic (at least one tag must appear in title/brand/size)
+      - max_price: upper bound on price
+    """
     if not listings:
         return []
 
-    tags = [t.lower() for t in (tags or []) if t.strip()]
+    tags = [t.lower().strip() for t in (tags or []) if t.strip()]
     filtered = []
 
     for l in listings:
-        title = (l.title or "").lower()
+        # Build searchable text blob
+        parts = [
+            getattr(l, "title", "") or "",
+            getattr(l, "brand", "") or "",
+            getattr(l, "size", "") or "",
+        ]
+        text_raw = " ".join(parts).lower()
 
-        if tags and not all(tag in title for tag in tags):
-            continue
+        # Normalize by stripping weird chars
+        text = "".join(ch for ch in text_raw if ch.isalnum() or ch.isspace())
+        text_no_space = text.replace(" ", "")
 
+        # TAG FILTER: OR logic
+        if tags:
+            match_any = False
+            for tag in tags:
+                t = "".join(ch for ch in tag.lower() if ch.isalnum())
+                if not t:
+                    continue
+                if t in text or t in text_no_space:
+                    match_any = True
+                    break
+            if not match_any:
+                continue
+
+        # PRICE FILTER
         if max_price is not None and (l.price is None or l.price > max_price):
             continue
 
@@ -116,7 +141,6 @@ def compute_stats(listings: List[Listing]):
 
     by_site_counts = defaultdict(int)
     by_site_prices = defaultdict(list)
-
     for l in listings:
         by_site_counts[l.site] += 1
         if l.price and l.price > 0:
@@ -143,14 +167,14 @@ def compute_stats(listings: List[Listing]):
     }
 
 
-def get_rule_matches(rule):
+def get_rule_matches(rule: dict) -> list[Listing]:
     raw = run_search(rule["query"], rule["sites"], limit=100)
     return apply_filters(raw, tags=rule["tags"], max_price=rule["max_price"])
 
 
-# ---------------------------------------------------------
+# -------------------------------------
 # ROUTES
-# ---------------------------------------------------------
+# -------------------------------------
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -158,14 +182,14 @@ def index():
     tags_input = ""
     max_price_input = ""
     selected_sites = ["grailed", "mercari_us", "depop", "poshmark", "facebook_marketplace"]
-    results = []
+    results: List[Listing] = []
     stats = None
 
     if request.method == "POST":
         query = request.form.get("query", "").strip()
         tags_input = request.form.get("tags", "").strip()
         max_price_input = request.form.get("max_price", "").strip()
-        selected_sites = request.form.getlist("sites")
+        selected_sites = request.form.getlist("sites") or selected_sites
 
         tags = [t.strip() for t in tags_input.split(",") if t.strip()]
 
@@ -173,12 +197,13 @@ def index():
         if max_price_input:
             try:
                 max_price = float(max_price_input)
-            except:
+            except ValueError:
                 max_price = None
 
-        raw_results = run_search(query, selected_sites, limit=50)
-        results = apply_filters(raw_results, tags, max_price)
-        stats = compute_stats(results)
+        if query and selected_sites:
+            raw_results = run_search(query, selected_sites, limit=50)
+            results = apply_filters(raw_results, tags=tags, max_price=max_price)
+            stats = compute_stats(results)
 
     grouped = defaultdict(list)
     for r in results:
@@ -198,37 +223,43 @@ def index():
 @app.route("/watch", methods=["GET", "POST"])
 def watch():
     global _next_watch_id
+
     message = None
 
+    # (Optional) manual creation if you ever add a form here again
     if request.method == "POST":
         query = request.form.get("query", "").strip()
-        tags_raw = request.form.get("tags", "").strip()
-        max_price_raw = request.form.get("max_price", "").strip()
-        sites = request.form.getlist("sites")
+        tags_input = request.form.get("tags", "").strip()
+        max_price_input = request.form.get("max_price", "").strip()
+        selected_sites = request.form.getlist("sites")
 
-        tags = [t.strip().lower() for t in tags_raw.split(",") if t.strip()]
+        tags = [t.strip().lower() for t in tags_input.split(",") if t.strip()]
 
         max_price = None
-        if max_price_raw:
+        if max_price_input:
             try:
-                max_price = float(max_price_raw)
-            except:
+                max_price = float(max_price_input)
+            except ValueError:
                 max_price = None
 
-        if query and sites:
-            watch_rules.append({
-                "id": _next_watch_id,
-                "query": query,
-                "tags": tags,
-                "max_price": max_price,
-                "sites": sites,
-                "seen_ids": set(),
-            })
+        if query and selected_sites:
+            watch_rules.append(
+                {
+                    "id": _next_watch_id,
+                    "query": query,
+                    "tags": tags,
+                    "max_price": max_price,
+                    "sites": selected_sites,
+                    "seen_ids": set(),
+                }
+            )
             _next_watch_id += 1
             message = "Watch rule added!"
+        else:
+            message = "Please provide a query and at least one site."
 
-    rule_summaries = []
     notifications = []
+    rule_summaries = []
 
     for rule in watch_rules:
         matches = get_rule_matches(rule)
@@ -247,6 +278,7 @@ def watch():
 
     return render_template(
         "watch.html",
+        watch_rules=watch_rules,
         rule_summaries=rule_summaries,
         notifications=notifications,
         message=message,
@@ -254,14 +286,18 @@ def watch():
 
 
 @app.route("/watch/<int:rule_id>")
-def watch_detail(rule_id):
+def watch_detail(rule_id: int):
     rule = next((r for r in watch_rules if r["id"] == rule_id), None)
     if not rule:
         abort(404)
 
     matches = get_rule_matches(rule)
     stats = compute_stats(matches)
-    matches_sorted = sorted(matches, key=lambda x: (x.price if x.price else 1e9))
+
+    matches_sorted = sorted(
+        matches,
+        key=lambda x: (x.price if x.price is not None else 1e9)
+    )
 
     return render_template(
         "watch_detail.html",
@@ -271,9 +307,85 @@ def watch_detail(rule_id):
     )
 
 
-# ---------------------------------------------------------
-# ANALYTICS
-# ---------------------------------------------------------
+@app.route("/watch/<int:rule_id>/edit", methods=["GET", "POST"])
+def watch_edit(rule_id: int):
+    rule = next((r for r in watch_rules if r["id"] == rule_id), None)
+    if not rule:
+        abort(404)
+
+    if request.method == "POST":
+        query = request.form.get("query", "").strip()
+        tags_input = request.form.get("tags", "").strip()
+        max_price_input = request.form.get("max_price", "").strip()
+        selected_sites = request.form.getlist("sites")
+
+        tags = [t.strip().lower() for t in tags_input.split(",") if t.strip()]
+
+        max_price = None
+        if max_price_input:
+            try:
+                max_price = float(max_price_input)
+            except ValueError:
+                max_price = None
+
+        if query:
+            rule["query"] = query
+        rule["tags"] = tags
+        rule["max_price"] = max_price
+        if selected_sites:
+            rule["sites"] = selected_sites
+
+        return redirect(url_for("watch_detail", rule_id=rule_id))
+
+    all_sites = [
+        ("grailed", "Grailed"),
+        ("mercari_us", "Mercari US (simulated)"),
+        ("depop", "Depop (simulated)"),
+        ("poshmark", "Poshmark (simulated)"),
+        ("facebook_marketplace", "Facebook Marketplace (simulated)"),
+    ]
+    tags_string = ", ".join(rule.get("tags", [])) if rule.get("tags") else ""
+
+    return render_template(
+        "watch_edit.html",
+        rule=rule,
+        all_sites=all_sites,
+        tags_string=tags_string,
+    )
+
+
+@app.route("/watch_add", methods=["POST"])
+def watch_add():
+    global _next_watch_id
+
+    item = request.form.to_dict()
+    title = (item.get("title") or "").strip()
+    site = (item.get("site") or "").strip()
+    price_raw = item.get("price")
+
+    max_price = None
+    if price_raw not in (None, ""):
+        try:
+            max_price = float(price_raw)
+        except ValueError:
+            max_price = None
+
+    sites = [site] if site else []
+
+    rule = {
+        "id": _next_watch_id,
+        "query": title or "Untitled watch",
+        "tags": [],
+        "max_price": max_price,
+        "sites": sites,
+        "seen_ids": set(),
+    }
+    watch_rules.append(rule)
+    _next_watch_id += 1
+
+    print("Added watch rule from listing:", rule)
+    return redirect(url_for("watch_edit", rule_id=rule["id"]))
+
 
 @app.route("/analytics")
 def analytics():
@@ -290,11 +402,14 @@ def analytics():
             rule_labels.append(rule["query"])
             rule_avg_prices.append(stats["avg_price_overall"])
 
+        # Only entries that have a datetime and a price
         dated = [m for m in matches if m.created_at and m.price]
+
         if len(dated) >= 2:
-            sorted_dates = sorted(dated, key=lambda x: x.created_at)
-            drop = sorted_dates[0].price - sorted_dates[-1].price
-            rule_price_drops.append(round(drop, 2))
+            # ✅ FIX: sort by isoformat() string to avoid naive/aware datetime comparison issues
+            dated_sorted = sorted(dated, key=lambda x: x.created_at.isoformat())
+            drop = round(dated_sorted[0].price - dated_sorted[-1].price, 2)
+            rule_price_drops.append(drop)
         else:
             rule_price_drops.append(0)
 
@@ -306,6 +421,7 @@ def analytics():
                 "price": m.price,
             })
 
+    # Sort trend points by date string
     trend_points.sort(key=lambda x: x["date"])
 
     analytics_data = {
@@ -313,46 +429,10 @@ def analytics():
         "avg_prices": rule_avg_prices,
         "price_drops": rule_price_drops,
         "trend_points": trend_points,
-        "saved_items": analytics_items,   # <-- NEW
     }
 
     return render_template("analytics.html", analytics_data=analytics_data)
 
-
-# ---------------------------------------------------------
-# PARTIAL SAVE ROUTES
-# ---------------------------------------------------------
-
-@app.route("/analytics_add", methods=["POST"])
-def analytics_add():
-    item = request.form.to_dict()
-    item["url"] = normalize_url(item.get("site"), item.get("url"))
-    analytics_items.append(item)
-    print("Saved to analytics:", item)
-    return redirect("/analytics")
-
-
-@app.route("/watch_add", methods=["POST"])
-def watch_add():
-    item = request.form.to_dict()
-    title = item.get("title", "")
-
-    watch_rules.append({
-        "id": len(watch_rules) + 1,
-        "query": title,
-        "tags": [],
-        "max_price": None,
-        "sites": [item.get("site")],
-        "seen_ids": set(),
-    })
-
-    print("Added watch rule:", title)
-    return redirect("/watch")
-
-
-# ---------------------------------------------------------
-# PROFILE
-# ---------------------------------------------------------
 
 @app.route("/profile")
 def profile():
@@ -366,10 +446,6 @@ def profile():
         total_seen=total_seen,
     )
 
-
-# ---------------------------------------------------------
-# MAIN
-# ---------------------------------------------------------
 
 if __name__ == "__main__":
     print(">>> app.py started, starting Flask server...")

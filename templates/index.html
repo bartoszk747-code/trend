@@ -13,9 +13,10 @@
 
   <style>
     body {
-      background-color: #e5e7eb; /* Light gray */
+      background-color: #e5e7eb;
       color: #111827;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
     }
 
     /* NAVBAR */
@@ -60,7 +61,7 @@
     .site-poshmark { background-color: #a855f7; color: #f9fafb; }
     .site-facebook_marketplace { background-color: #3b82f6; color: #f9fafb; }
 
-    /* BMW BUTTONS */
+    /* BUTTONS */
     .btn-view {
       border: 2px solid #009FE3;
       background-color: #009FE3;
@@ -70,17 +71,6 @@
     .btn-view:hover {
       background-color: #007bb5;
       border-color: #007bb5;
-      color: #ffffff;
-    }
-
-    .btn-bmw {
-      border: 2px solid #009FE3;
-      background-color: #ffffff;
-      color: #0A1A44;
-      font-weight: 600;
-    }
-    .btn-bmw:hover {
-      background-color: #009FE3;
       color: #ffffff;
     }
 
@@ -95,6 +85,130 @@
       color: #ffffff;
     }
 
+    /* ─────────────────────────────────────────
+       INTRO 1 – MATRIX GATE
+       ───────────────────────────────────────── */
+    #intro-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    #matrix-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #000000;
+    }
+
+    #intro-center {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+
+    #intro-main-text {
+      font-size: clamp(0.9rem, 2vw, 1.3rem);
+      color: #bbf7d0; /* light green */
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      text-shadow:
+        0 0 10px rgba(74, 222, 128, 0.8),
+        0 0 22px rgba(0, 0, 0, 1);
+    }
+
+    /* ─────────────────────────────────────────
+       INTRO 2 – BLACK PS2 BOOT
+       ───────────────────────────────────────── */
+    #boot-overlay {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(80,90,110,0.18), transparent 55%),
+        radial-gradient(circle at 90% 100%, rgba(10,25,55,0.22), transparent 60%),
+        #00030A;
+      display: none; /* shown after click */
+      align-items: center;
+      justify-content: center;
+      z-index: 9998;
+      overflow: hidden;
+      opacity: 0;
+    }
+
+    .boot-mist-layer {
+      position: absolute;
+      width: 260%;
+      height: 260%;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.16), transparent 55%),
+        radial-gradient(circle at 80% 60%, rgba(148,163,184,0.12), transparent 60%),
+        radial-gradient(circle at 40% 85%, rgba(255,255,255,0.10), transparent 55%);
+      filter: blur(34px);
+      animation: drift 40s linear infinite;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .boot-mist-layer.mist2 {
+      animation: drift2 55s linear infinite;
+      opacity: 0.35;
+      transform: rotate(12deg);
+    }
+
+    #boot-center {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    #boot-text-main {
+      font-size: clamp(1.0rem, 2.2vw, 1.6rem);
+      color: #f9fafb;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      text-shadow:
+        0 0 8px rgba(255,255,255,0.75),
+        0 0 22px rgba(0,0,0,1);
+    }
+
+    #boot-loading {
+      width: 260px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.3);
+      overflow: hidden;
+    }
+
+    #boot-progress {
+      width: 0%;
+      height: 100%;
+      background: #00A8FF;
+      box-shadow: 0 0 10px #00A8FF;
+      transition: width 0.1s linear;
+    }
+
+    @keyframes drift {
+      0%   { transform: translate3d(-12%, -10%, 0); }
+      50%  { transform: translate3d(8%, 6%, 0); }
+      100% { transform: translate3d(-12%, -10%, 0); }
+    }
+    @keyframes drift2 {
+      0%   { transform: translate3d(8%, -8%, 0); }
+      50%  { transform: translate3d(-10%, 10%, 0); }
+      100% { transform: translate3d(8%, -8%, 0); }
+    }
   </style>
 </head>
 
@@ -121,6 +235,32 @@
   </div>
 </nav>
 
+<!-- INTRO 1: MATRIX SCREEN -->
+<div id="intro-overlay">
+  <canvas id="matrix-canvas"></canvas>
+
+  <div id="intro-center">
+    <div id="intro-main-text">CLICK ANYWHERE TO BEGIN</div>
+  </div>
+</div>
+
+<!-- INTRO 2: BLACK PS2 BOOT -->
+<div id="boot-overlay">
+  <div class="boot-mist-layer"></div>
+  <div class="boot-mist-layer mist2"></div>
+
+  <div id="boot-center">
+    <div id="boot-text-main">HELLO</div>
+    <div id="boot-loading">
+      <div id="boot-progress"></div>
+    </div>
+  </div>
+
+  <!-- PS2 Startup Sound lives here -->
+  <audio id="ps2-audio" preload="auto">
+    <source src="/static/ps2_start_up.mp3" type="audio/mpeg">
+  </audio>
+</div>
 
 <div class="container mb-5">
 
@@ -150,7 +290,7 @@
               class="form-control"
               name="tags"
               placeholder="e.g. vintage, red, supreme"
-              value="{{ tags_input }}"
+              value="{{ tags_input or '' }}"
             >
           </div>
 
@@ -163,7 +303,7 @@
               class="form-control"
               name="max_price"
               placeholder="e.g. 90"
-              value="{{ max_price_input }}"
+              value="{{ max_price_input or '' }}"
             >
           </div>
 
@@ -204,7 +344,6 @@
       </div>
     </div>
   </div>
-
 
   {% if stats %}
   <!-- STATS ROW -->
@@ -276,7 +415,6 @@
   {% endif %}
   {% endif %}
 
-
   <!-- RESULTS BY SITE -->
   {% for site, items in grouped_results.items() %}
   <div class="row mb-3">
@@ -339,25 +477,23 @@
         {% endif %}
 
         <div class="mt-auto d-flex flex-wrap gap-2 pt-2">
+          {% if item.url %}
+          <a href="{{ item.url }}" target="_blank" class="btn btn-sm btn-view">
+            View
+          </a>
+          {% endif %}
 
-  {% if item.url %}
-  <a href="{{ item.url }}" target="_blank" class="btn btn-sm btn-view">
-    View
-  </a>
-  {% endif %}
-
-  <form method="POST" action="/watch_add">
-    <input type="hidden" name="title" value="{{ item.title }}">
-    <input type="hidden" name="url" value="{{ item.url }}">
-    <input type="hidden" name="price" value="{{ item.price }}">
-    <input type="hidden" name="currency" value="{{ item.currency }}">
-    <input type="hidden" name="site" value="{{ site }}">
-    <button type="submit" class="btn btn-sm btn-bmw-secondary">
-      Add to Watching
-    </button>
-  </form>
-
-</div>
+          <form method="POST" action="/watch_add">
+            <input type="hidden" name="title" value="{{ item.title }}">
+            <input type="hidden" name="url" value="{{ item.url }}">
+            <input type="hidden" name="price" value="{{ item.price }}">
+            <input type="hidden" name="currency" value="{{ item.currency }}">
+            <input type="hidden" name="site" value="{{ site }}">
+            <button type="submit" class="btn btn-sm btn-bmw-secondary">
+              Add to Watching
+            </button>
+          </form>
+        </div>
 
       </div>
     </div>
@@ -368,5 +504,149 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+(function () {
+  const INTRO_KEY = "tt_intro_two_stage_v4";
+
+  const introOverlay   = document.getElementById("intro-overlay");
+  const matrixCanvas   = document.getElementById("matrix-canvas");
+  const bootOverlay    = document.getElementById("boot-overlay");
+  const bootProgressEl = document.getElementById("boot-progress");
+  const bootTextEl     = document.getElementById("boot-text-main");
+  const audio          = document.getElementById("ps2-audio");
+
+  if (!introOverlay || !matrixCanvas || !bootOverlay || !bootProgressEl || !bootTextEl || !audio) return;
+
+  // Only once per tab session
+  if (sessionStorage.getItem(INTRO_KEY) === "1") {
+    introOverlay.style.display = "none";
+    bootOverlay.style.display = "none";
+    return;
+  }
+  sessionStorage.setItem(INTRO_KEY, "1");
+
+  /* ───────── Matrix Rain: laser sweep then faster readable rain ───────── */
+  const ctx = matrixCanvas.getContext("2d");
+  let width, height, columns, drops;
+  const fontSize = 14;
+
+  function resizeMatrix() {
+    width = matrixCanvas.width  = window.innerWidth;
+    height = matrixCanvas.height = window.innerHeight;
+    columns = Math.floor(width / fontSize);
+    drops = new Array(columns).fill(0);
+  }
+  resizeMatrix();
+  window.addEventListener("resize", resizeMatrix);
+
+  let firstPhase = true;
+  let tickCount = 0;
+  const LASER_TICKS = 14; // how long laser phase lasts (~1.4s at 100ms)
+
+  function drawMatrix() {
+    // Clear fully so each digit is sharp
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = "#22c55e";
+    ctx.font = fontSize + "px monospace";
+
+    // Laser phase = fast drop, rain phase = slower but readable
+    const speed = firstPhase ? 3 : 1.2;
+
+    for (let i = 0; i < drops.length; i++) {
+      const text = Math.random() > 0.5 ? "1" : "0";
+      const x = i * fontSize;
+      const y = drops[i] * fontSize;
+
+      ctx.fillText(text, x, y);
+
+      if (y > height && Math.random() > 0.98) {
+        drops[i] = 0;
+      } else {
+        drops[i] += speed;
+      }
+    }
+
+    if (firstPhase) {
+      tickCount++;
+      if (tickCount >= LASER_TICKS) {
+        firstPhase = false;
+      }
+    }
+  }
+
+  // ~10fps: initial laser feels quick, then rain is a bit faster than before
+  setInterval(drawMatrix, 100);
+
+  /* ───────── PS2 Boot Screen Logic ───────── */
+
+  let audioStarted = false;
+  let bootStarted  = false;
+
+  function startBootSequence() {
+    if (bootStarted) return;
+    bootStarted = true;
+
+    // Fade out matrix intro
+    introOverlay.style.transition = "opacity .35s ease-out";
+    introOverlay.style.opacity = "0";
+    setTimeout(() => {
+      introOverlay.style.display = "none";
+    }, 400);
+
+    // Show boot overlay
+    bootOverlay.style.display = "flex";
+    requestAnimationFrame(() => {
+      bootOverlay.style.transition = "opacity .45s ease-out";
+      bootOverlay.style.opacity = "1";
+    });
+
+    // Start audio
+    if (!audioStarted) {
+      audioStarted = true;
+      audio.currentTime = 0;
+      audio.volume = 1.0;
+      audio.play().catch(err => {
+        console.error("Audio play blocked:", err);
+      });
+    }
+
+    // HELLO → OPTIMIZING → WELCOME USER...
+    bootTextEl.textContent = "HELLO";
+    setTimeout(() => {
+      bootTextEl.textContent = "OPTIMIZING";
+    }, 2500);
+    setTimeout(() => {
+      bootTextEl.textContent = "WELCOME USER...";
+    }, 5000);
+
+    // Loading bar ~9 seconds
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 100 / 90; // ~9s at 100ms
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+      }
+      bootProgressEl.style.width = progress + "%";
+    }, 100);
+
+    // Fade out boot overlay after ~9s
+    setTimeout(() => {
+      bootOverlay.style.transition = "opacity .6s ease-out";
+      bootOverlay.style.opacity = "0";
+      setTimeout(() => {
+        bootOverlay.style.display = "none";
+      }, 650);
+    }, 9000);
+  }
+
+  // CLICK ANYWHERE TO BEGIN
+  introOverlay.addEventListener("click", startBootSequence);
+})();
+</script>
+
 </body>
 </html>
