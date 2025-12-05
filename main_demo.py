@@ -9,7 +9,7 @@ def main():
     print("Running script...")
    #Cheks the DB exists, created tbls
     init_db()
-    #grailed(real)
+    # grailed(real)
     client = GrailedClient()
     print("Searching Grailed...")
     results = client.search("jacket", limit=3)

@@ -1,6 +1,6 @@
 import sqlite3
 from pathlib import Path
-#Open connection to DB access by name
+#DB setup
 DB_PATH = Path("marketwatcher.db")
 def get_conn():
     """Return a SQLite connection with row access by column name."""

@@ -215,7 +215,7 @@
                 </div>
 
                 <!-- charrts -->
-                <div class="row"><div class="col-lg-6 mb-3"><div class="card p-3"><h6 class="mb-2">Price trend – main listing</h6><p class="text-light small mb-2">Line + dots for your “main” listing so you can actually read it.</p><canvas id="trendChart-{{ rid }}"></canvas></div></div><div class="col-lg-6 mb-3"><div class="card p-3"><h6 class="mb-2">All listing prices</h6><p class="text-light small mb-2">Scatter of everything tracked for this rule – like a mini Bring a Trailer chart.</p><canvas id="scatterChart-{{ rid }}"></canvas></div></div></div>
+                <div class="row"><div class="col-lg-6 mb-3"><div class="card p-3"><h6 class="mb-2">Price trend – main listing</h6><p class="text-light small mb-2">Line + dots for your “main” listing so you can actually read it.</p><canvas id="trendChart-{{ rid }}"></canvas></div></div><div class="col-lg-6 mb-3"><div class="card p-3"><h6 class="mb-2">All listing prices</h6><canvas id="scatterChart-{{ rid }}"></canvas></div></div></div>
 
                 {% if not block.trend_points %}
                   <p class="text-light small mb-0">

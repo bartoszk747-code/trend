@@ -4,7 +4,6 @@
 from collections import defaultdict
 from statistics import mean
 from typing import List
-
 from flask import Flask, render_template, request, abort, redirect, url_for
 
 # Import our API clients - some are real, some are fake/simulated
@@ -13,7 +12,6 @@ from trend.api_clients.mercari_us_client import MercariUSClient
 from trend.api_clients.depop_client_fake import DepopClientFake
 from trend.api_clients.poshmark_client_fake import PoshmarkClientFake
 from trend.api_clients.facebook_marketplace_client_fake import FacebookMarketplaceClientFake
-
 from trend.db import init_db
 from trend.models import Listing
 
@@ -23,11 +21,7 @@ from trend.price_stats import average_price_for_query
 
 print(">>> importing app.py")
 app = Flask(__name__)
-
-# -------------------------------------
-# INITIALIZATION
-# -------------------------------------
-
+# init
 # Initialize DB and clients
 init_db()
 grailed_client = GrailedClient()
@@ -41,17 +35,10 @@ watch_rules: list[dict] = []
 _next_watch_id = 1
 
 # Mock user for demo purposes
-current_user = {
-    "username": "demo_user",
-    "email": "demo@trendtracker.app",
-    "plan": "Beta access",
-}
+current_user = {"username": "demo_user","email": "demo@trendtracker.app","plan": "Beta access",}
 
 
-# -------------------------------------
-# UTILITY FUNCTIONS
-# -------------------------------------
-
+# utils
 def normalize_url(site: str, url: str | None) -> str | None:
     """
     Helper to make sure we always have a valid clickable link.
@@ -59,25 +46,22 @@ def normalize_url(site: str, url: str | None) -> str | None:
     """
     if not url:
         return None
-
     if url.startswith("http"):
         return url
 
     site_domains = {
-        "grailed": "https://www.grailed.com",
-        "depop": "https://www.depop.com",
+        "grailed": "https://www.grailed.com","depop": "https://www.depop.com",
         "poshmark": "https://poshmark.com",
         "mercari_us": "https://www.mercari.com",
         "facebook_marketplace": "https://www.facebook.com",
     }
-
     base = site_domains.get(site, "")
     return base + url
 
 
 def run_search(query: str, selected_sites: List[str], limit: int = 20) -> List[Listing]:
     """
-    Aggregates results from all selected marketplaces.
+    Aggregate s results from all selected marketplaces.
     """
     all_results: List[Listing] = []
 
@@ -96,7 +80,6 @@ def run_search(query: str, selected_sites: List[str], limit: int = 20) -> List[L
     # Fix up URLs before returning
     for r in all_results:
         r.url = normalize_url(r.site, getattr(r, "url", None))
-
     return all_results
 
 
@@ -115,11 +98,7 @@ def apply_filters(listings, tags=None, max_price=None):
 
     for l in listings:
         # Combine all text fields for easier searching
-        parts = [
-            getattr(l, "title", "") or "",
-            getattr(l, "brand", "") or "",
-            getattr(l, "size", "") or "",
-        ]
+        parts = [getattr(l, "title", "") or "",getattr(l, "brand", "") or "",getattr(l, "size", "") or "",]
         text_raw = " ".join(parts).lower()
 
         # Normalize text to handle weird spacing/punctuation
@@ -143,7 +122,6 @@ def apply_filters(listings, tags=None, max_price=None):
         # Check price
         if max_price is not None and (l.price is None or l.price > max_price):
             continue
-
         filtered.append(l)
 
     return filtered
@@ -154,13 +132,7 @@ def compute_stats(listings: List[Listing]):
     Calculates basic stats for the dashboard/analytics view.
     """
     if not listings:
-        return {
-            "total": 0,
-            "by_site": {},
-            "avg_price_overall": None,
-            "avg_price_by_site": {},
-            "cheapest": None,
-        }
+        return {"total": 0,"by_site": {},"avg_price_overall": None,"avg_price_by_site": {},"cheapest": None,}
 
     by_site_counts = defaultdict(int)
     by_site_prices = defaultdict(list)
@@ -171,11 +143,7 @@ def compute_stats(listings: List[Listing]):
             by_site_prices[l.site].append(l.price)
 
     # Calculate averages per site
-    by_site_avg = {
-        site: round(mean(prices), 2)
-        for site, prices in by_site_prices.items()
-        if prices
-    }
+    by_site_avg = {site: round(mean(prices), 2) for site, prices in by_site_prices.items() if prices}
 
     valid = [l for l in listings if l.price is not None]
     cheapest = min(valid, key=lambda x: x.price) if valid else None
@@ -183,13 +151,7 @@ def compute_stats(listings: List[Listing]):
     all_prices = [l.price for l in valid if l.price and l.price > 0]
     avg_overall = round(mean(all_prices), 2) if all_prices else None
 
-    return {
-        "total": len(listings),
-        "by_site": dict(by_site_counts),
-        "avg_price_overall": avg_overall,
-        "avg_price_by_site": by_site_avg,
-        "cheapest": cheapest,
-    }
+    return {"total": len(listings),"by_site": dict(by_site_counts),"avg_price_overall": avg_overall,"avg_price_by_site": by_site_avg,"cheapest": cheapest,}
 
 
 def get_rule_matches(rule: dict) -> list[Listing]:
@@ -198,9 +160,7 @@ def get_rule_matches(rule: dict) -> list[Listing]:
     return apply_filters(raw, tags=rule["tags"], max_price=rule["max_price"])
 
 
-# -------------------------------------
-# ROUTES
-# -------------------------------------
+# routes
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -218,7 +178,6 @@ def index():
         tags_input = request.form.get("tags", "").strip()
         max_price_input = request.form.get("max_price", "").strip()
         selected_sites = request.form.getlist("sites") or selected_sites
-
         tags = [t.strip() for t in tags_input.split(",") if t.strip()]
 
         max_price = None
@@ -240,21 +199,12 @@ def index():
     for r in results:
         grouped[r.site].append(r)
 
-    return render_template(
-        "index.html",
-        query=query,
-        tags_input=tags_input,
-        max_price_input=max_price_input,
-        selected_sites=selected_sites,
-        grouped_results=grouped,
-        stats=stats,
-    )
+    return render_template("index.html",query=query,tags_input=tags_input,max_price_input=max_price_input,selected_sites=selected_sites,grouped_results=grouped,stats=stats,)
 
 
 @app.route("/watch", methods=["GET", "POST"])
 def watch():
     global _next_watch_id
-
     message = None
 
     # Handle new watch rule creation
@@ -263,7 +213,6 @@ def watch():
         tags_input = request.form.get("tags", "").strip()
         max_price_input = request.form.get("max_price", "").strip()
         selected_sites = request.form.getlist("sites")
-
         tags = [t.strip().lower() for t in tags_input.split(",") if t.strip()]
 
         max_price = None
@@ -274,16 +223,7 @@ def watch():
                 max_price = None
 
         if query and selected_sites:
-            watch_rules.append(
-                {
-                    "id": _next_watch_id,
-                    "query": query,
-                    "tags": tags,
-                    "max_price": max_price,
-                    "sites": selected_sites,
-                    "seen_ids": set(),  # track what we've already notified about
-                }
-            )
+            watch_rules.append({"id": _next_watch_id,"query": query,"tags": tags,"max_price": max_price,"sites": selected_sites,"seen_ids": set(),})
             _next_watch_id += 1
             message = "Watch rule added!"
         else:
@@ -323,23 +263,12 @@ def watch_detail(rule_id: int):
     rule = next((r for r in watch_rules if r["id"] == rule_id), None)
     if not rule:
         abort(404)
-
     # Get fresh results
     matches = get_rule_matches(rule)
     stats = compute_stats(matches)
-
     # Sort by price (cheapest first)
-    matches_sorted = sorted(
-        matches,
-        key=lambda x: (x.price if x.price is not None else 1e9)
-    )
-
-    return render_template(
-        "watch_detail.html",
-        rule=rule,
-        matches=matches_sorted,
-        stats=stats,
-    )
+    matches_sorted = sorted(matches,key=lambda x: (x.price if x.price is not None else 1e9))
+    return render_template("watch_detail.html",rule=rule,matches=matches_sorted,stats=stats,)
 
 
 @app.route("/watch/<int:rule_id>/edit", methods=["GET", "POST"])
@@ -353,9 +282,7 @@ def watch_edit(rule_id: int):
         tags_input = request.form.get("tags", "").strip()
         max_price_input = request.form.get("max_price", "").strip()
         selected_sites = request.form.getlist("sites")
-
         tags = [t.strip().lower() for t in tags_input.split(",") if t.strip()]
-
         max_price = None
         if max_price_input:
             try:
@@ -370,31 +297,18 @@ def watch_edit(rule_id: int):
         rule["max_price"] = max_price
         if selected_sites:
             rule["sites"] = selected_sites
-
         return redirect(url_for("watch_detail", rule_id=rule_id))
 
-    all_sites = [
-        ("grailed", "Grailed"),
-        ("mercari_us", "Mercari US (simulated)"),
-        ("depop", "Depop (simulated)"),
-        ("poshmark", "Poshmark (simulated)"),
-        ("facebook_marketplace", "Facebook Marketplace (simulated)"),
-    ]
+    all_sites = [("grailed", "Grailed"),("mercari_us", "Mercari US (simulated)"),("depop", "Depop (simulated)"),("poshmark", "Poshmark (simulated)"),("facebook_marketplace", "Facebook Marketplace (simulated)"),]
     tags_string = ", ".join(rule.get("tags", [])) if rule.get("tags") else ""
 
-    return render_template(
-        "watch_edit.html",
-        rule=rule,
-        all_sites=all_sites,
-        tags_string=tags_string,
-    )
+    return render_template("watch_edit.html",rule=rule,all_sites=all_sites,tags_string=tags_string,)
 
 
 @app.route("/watch_add", methods=["POST"])
 def watch_add():
     # Quick add from the search results page
     global _next_watch_id
-
     item = request.form.to_dict()
     title = (item.get("title") or "").strip()
     site = (item.get("site") or "").strip()
@@ -406,20 +320,11 @@ def watch_add():
             max_price = float(price_raw)
         except ValueError:
             max_price = None
-
     sites = [site] if site else []
 
-    rule = {
-        "id": _next_watch_id,
-        "query": title or "Untitled watch",
-        "tags": [],
-        "max_price": max_price,
-        "sites": sites,
-        "seen_ids": set(),
-    }
+    rule = {"id": _next_watch_id,"query": title or "Untitled watch","tags": [],"max_price": max_price,"sites": sites,"seen_ids": set(),}
     watch_rules.append(rule)
     _next_watch_id += 1
-
     print("Added watch rule from listing:", rule)
     return redirect(url_for("watch_edit", rule_id=rule["id"]))
 
@@ -430,11 +335,9 @@ def analytics():
     New analytics endpoint:
       - One accordion card per watch rule
       - For each rule: stats, lowest price, DB historical avg
-      - Trend data with: line+dots for “main” listing, dots for everything else (BaT style)
+      - Trend data with: line+dots for "main" listing, dots for everything else (BaT style)
     """
-
-    rule_blocks = []   # this becomes `rules` in analytics.html
-
+    rule_blocks = []   #
     for rule in watch_rules:
         # always pull fresh matches so analytics feels "live"
         matches = get_rule_matches(rule)
@@ -476,7 +379,8 @@ def analytics():
                 "is_main": bool(is_main_listing(m)),
             })
 
-        # average change per week for the main listing, if we have at least 2 data points
+        # average change per week for the main listing
+        #if we have at least 2 data points
         avg_change_per_week = None
         main_points = [m for m in dated_sorted if is_main_listing(m)]
 
@@ -511,15 +415,9 @@ def analytics():
 def profile():
     total_rules = len(watch_rules)
     total_seen = sum(len(r["seen_ids"]) for r in watch_rules)
-
-    return render_template(
-        "profile.html",
-        user=current_user,
-        total_rules=total_rules,
-        total_seen=total_seen,
-    )
+    return render_template("profile.html",user=current_user,total_rules=total_rules,total_seen=total_seen,)
 
 
 if __name__ == "__main__":
-    print(">>> app.py started, starting Flask server...")
+    print("app.py started, starting Flask server...")
     app.run(debug=True)
