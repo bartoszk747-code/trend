@@ -10,7 +10,7 @@ class PoshmarkClientFake(BaseMarketplaceClient):
     site_name = "poshmark"
 
     def search(self, query, min_price=None, max_price=None, limit=20, **kwargs):
-        # just mocking this for now so we don't hit the real api
+        #One we get the real API this would be different 
         print(f"DEBUG: returning fake poshmark results for {query}")
 
         titles = [
@@ -18,18 +18,19 @@ class PoshmarkClientFake(BaseMarketplaceClient):
             "Oversized {} Sweater", "{} Lounge Set", "{} Trench Coat"
         ]
         
-        # common brands on posh
+        #Popular brands we found on Poshmark
         brands = ["Aritzia", "Lululemon", "Free People", "Zara", "Madewell", "Anthropologie"]
-        
         results = []
         for i in range(limit):
-            # random price between 25 and 250
+            # rndm price 25 to 250
             p = random.randint(25, 250)
             
-            # random date in last 60 days
+            # rnd date last 60 days
             days_ago = random.randint(0, 60)
             dt = datetime.utcnow() - timedelta(days=days_ago)
 
+           
+           
             item = Listing(
                 site="poshmark",
                 listing_id=f"fake-posh-{i}",
@@ -44,5 +45,4 @@ class PoshmarkClientFake(BaseMarketplaceClient):
                 created_at=dt,
             )
             results.append(item)
-
         return results

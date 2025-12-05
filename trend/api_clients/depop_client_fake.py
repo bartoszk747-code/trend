@@ -1,19 +1,20 @@
 from typing import List
 from datetime import datetime, timedelta
 import random
-
 from .base import BaseMarketplaceClient
 from ..models import Listing
 
 
+
+#fake depop client until API is possible
 class DepopClientFake(BaseMarketplaceClient):
     site_name = "depop"
 
     def search(self, query, min_price=None, max_price=None, limit=20, **kwargs):
-        # TODO: implement real scraping later
+        # implement API afterwards 
         print("generating fake depop items...")
 
-        # y2k stuff usually
+        #Common listing Items that could be seen 
         templates = [
             "Y2K {} Baby Tee", "Vintage {} Graphic Tee", "{} Cargo Pants",
             "90s {} Sweatshirt", "{} Mini Skirt", "Vintage {} Track Jacket"
@@ -24,7 +25,6 @@ class DepopClientFake(BaseMarketplaceClient):
         out = []
         for i in range(limit):
             t = random.choice(templates).format(query.capitalize())
-            
             out.append(Listing(
                 site="depop",
                 listing_id=f"fake-depop-{i}",
@@ -38,5 +38,6 @@ class DepopClientFake(BaseMarketplaceClient):
                 image_url=None,
                 created_at=datetime.utcnow() - timedelta(days=random.randint(0, 30)),
             ))
+
 
         return out

@@ -5,7 +5,7 @@ import random
 from .base import BaseMarketplaceClient
 from ..models import Listing
 
-
+#Fake Marcari simulation
 class MercariUSClient(BaseMarketplaceClient):
     site_name = "mercari_us"
 
@@ -24,9 +24,11 @@ class MercariUSClient(BaseMarketplaceClient):
         for i in range(limit):
             t = random.choice(titles).format(query.capitalize())
             
-            # random price/date
+
+            # random price/date so it seems like real values
             p = random.randint(20, 250)
             dt = datetime.utcnow() - timedelta(days=random.randint(0, 30))
+
 
             items.append(Listing(
                 site="mercari_us",

@@ -1,5 +1,5 @@
 from .db import get_conn
-
+#average price calculator from DB using key words
 def average_price_for_query(query: str):
     conn = get_conn()
     c = conn.cursor()
@@ -14,3 +14,4 @@ def average_price_for_query(query: str):
     conn.close()
 
     return row["avg_price"] if row and row["avg_price"] is not None else None
+#Needs to be optimized in the future not optimal for large scales

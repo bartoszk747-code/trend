@@ -5,16 +5,15 @@ from trend.api_clients.poshmark_client_fake import PoshmarkClientFake
 from trend.api_clients.facebook_marketplace_client_fake import FacebookMarketplaceClientFake
 from trend.db import init_db
 
-
 def main():
     print("Running script...")
-
+   #Cheks the DB exists, created tbls
     init_db()
-
-    # --- GRAILED ---
+    #grailed(real)
     client = GrailedClient()
     print("Searching Grailed...")
     results = client.search("jacket", limit=3)
+
 
     print(f"Grailed results found: {len(results)}")
     for r in results:
@@ -24,11 +23,12 @@ def main():
         print("Price:", r.price, r.currency)
         print("URL:", r.url)
 
-    # --- MERCARI US (FAKE) ---
+    #Mercari simulated
     print("\n--- Mercari US (FAKE) ---")
     merc_us = MercariUSClient()
     mus_results = merc_us.search("jacket", limit=5)
     print(f"Mercari US results found: {len(mus_results)}")
+
 
     for item in mus_results:
         print("----------")
@@ -36,8 +36,7 @@ def main():
         print(f"Title: {item.title}")
         print(f"Price: {item.price} {item.currency}")
         print(f"URL: {item.url}")
-
-        # --- DEPOP (FAKE) ---
+        #DEPOP(simulated)
     print("\n--- Depop (FAKE) ---")
     depop = DepopClientFake()
     depop_results = depop.search("jacket", limit=5)
@@ -48,8 +47,7 @@ def main():
         print(f"Title: {item.title}")
         print(f"Price: {item.price} {item.currency}")
         print(f"URL: {item.url}")
-
-    # --- POSHMARK (FAKE) ---
+    #Poshmark simulated
     print("\n--- Poshmark (FAKE) ---")
     posh = PoshmarkClientFake()
     posh_results = posh.search("jacket", limit=5)
@@ -60,8 +58,7 @@ def main():
         print(f"Title: {item.title}")
         print(f"Price: {item.price} {item.currency}")
         print(f"URL: {item.url}")
-
-    # --- FACEBOOK MARKETPLACE (FAKE BMWs) ---
+    #Facbook Marktpalce(Simulated BMW listings) Variable listings like on real marketplace
     print("\n--- Facebook Marketplace (FAKE BMW DATA) ---")
     fb = FacebookMarketplaceClientFake()
     fb_results = fb.search("BMW", limit=20)
@@ -76,4 +73,5 @@ def main():
 
 
 if __name__ == "__main__":
+    #Tst script
     main()

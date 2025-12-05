@@ -5,8 +5,8 @@ from ..models import Listing
 
 
 class BaseMarketplaceClient(ABC):
-    """Abstract base class for marketplace clients (Grailed, Poshmark, Depop)."""
-
+    """Base for various clients (Grailed, Poshmark, Depop)."""
+ # name of the site.
     site_name: str
 
     @abstractmethod
@@ -19,5 +19,6 @@ class BaseMarketplaceClient(ABC):
         brand: str | None = None,
         limit: int = 40,
     ) -> List[Listing]:
-        """Return a list of normalized Listing objects for this marketplace."""
+        """Return a list of normalized listing objects for the chosen marketplace."""
+        #the subclass can't overide this
         raise NotImplementedError

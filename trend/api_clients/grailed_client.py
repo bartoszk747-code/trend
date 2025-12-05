@@ -1,3 +1,4 @@
+#using unofficial grailed API that we found 
 from typing import List
 from datetime import datetime
 
@@ -8,6 +9,7 @@ from .base import BaseMarketplaceClient
 from ..models import Listing
 
 
+#Grailed client
 class GrailedClient(BaseMarketplaceClient):
     site_name = "grailed"
 
@@ -16,8 +18,7 @@ class GrailedClient(BaseMarketplaceClient):
 
     def search(self, query, min_price=None, max_price=None, size=None, brand=None, limit=20):
         # using the unofficial api wrapper
-        # hopefully it doesn't break lol
-        
+        # Need to figure out why it doesn't display sometimes 
         p_min = int(min_price or 0)
         p_max = int(max_price or 999999)
 
@@ -41,10 +42,11 @@ class GrailedClient(BaseMarketplaceClient):
 
         out = []
         for item in res:
-            # grailed api returns messy data sometimes
+            # grailed api data is inconsistent can't always be read 
             lid = str(item.get("id") or item.get("objectID") or "")
             
-            # try to parse date
+            
+            #Parse
             created = None
             if raw_date := item.get("created_at"):
                 try:

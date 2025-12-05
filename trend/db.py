@@ -1,16 +1,13 @@
 import sqlite3
 from pathlib import Path
-
+#Open connection to DB access by name
 DB_PATH = Path("marketwatcher.db")
-
-
 def get_conn():
     """Return a SQLite connection with row access by column name."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-
-
+#Create table if not existing
 def init_db():
     """Create the listings table if it does not exist."""
     conn = get_conn()
@@ -35,6 +32,7 @@ def init_db():
         );
         """
     )
+
 
     conn.commit()
     conn.close()
