@@ -357,13 +357,10 @@ def analytics():
 
         # only entries that actually have a datetime and a price
         dated = [m for m in matches if m.created_at and m.price]
-
         # sort by date so the charts don't jump around
         dated_sorted = sorted(dated, key=lambda m: m.created_at.isoformat())
-
         # treat the original query text as the "main" listing's title
         q_norm = (rule["query"] or "").strip().lower()
-
         def is_main_listing(listing):
             title_norm = (listing.title or "").strip().lower()
             return title_norm == q_norm
@@ -371,13 +368,7 @@ def analytics():
         # build chart points
         trend_points = []
         for m in dated_sorted:
-            trend_points.append({
-                "title": m.title,
-                "date": m.created_at.isoformat(),
-                "price": m.price,
-                "site": m.site,
-                "is_main": bool(is_main_listing(m)),
-            })
+            trend_points.append({"title": m.title,"date": m.created_at.isoformat(),"price": m.price,"site": m.site,"is_main": bool(is_main_listing(m)),})
 
         # average change per week for the main listing
         #if we have at least 2 data points
@@ -395,19 +386,7 @@ def analytics():
                     avg_change_per_week = round(change / weeks, 2)
 
         # pack everything into one dict per rule
-        rule_blocks.append({
-            "id": rule["id"],
-            "query": rule["query"],
-            "sites": rule.get("sites", []),
-            "tags": rule.get("tags", []),
-            "stats": stats,
-            "lowest_price": lowest_price,
-            "lowest_currency": lowest_currency,
-            "historical_avg": historical_avg,
-            "avg_change_per_week": avg_change_per_week,
-            "trend_points": trend_points,
-        })
-
+        rule_blocks.append({"id": rule["id"],"query": rule["query"],"sites": rule.get("sites", []),"tags": rule.get("tags", []),"stats": stats,"lowest_price": lowest_price,"lowest_currency": lowest_currency,"historical_avg": historical_avg,"avg_change_per_week": avg_change_per_week,"trend_points": trend_points,})
     return render_template("analytics.html", rules=rule_blocks)
 
 
