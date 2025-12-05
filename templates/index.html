@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>TrendTracker – Multi-Marketplace Search</title>
+    <title>TrendTracker – Multi-Marketplace Search</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
 
   <!-- Bootstrap 5 -->
   <link
@@ -13,74 +14,78 @@
 
   <style>
     body {
-      background-color: #e5e7eb;
+        background-color: #e5e7eb;
       color: #111827;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      overflow-x: hidden;
+        overflow-x: hidden;
     }
+
 
     /* NAVBAR */
     .navbar {
       background: linear-gradient(90deg, #0A1A44, #009FE3);
     }
-    .navbar .nav-link {
+      .navbar .nav-link {
       color: #e5e7eb;
       font-weight: 500;
     }
     .navbar .nav-link.active {
-      background-color: rgba(255,255,255,0.2);
+        background-color: rgba(255,255,255,0.2);
     }
     .brand-accent {
       color: #ffffff;
-      font-weight: 700;
+        font-weight: 700;
     }
+
 
     /* CARDS */
     .card {
       background-color: #ffffff;
-      border-radius: 18px;
+        border-radius: 18px;
       border: 1px solid #d1d5db;
       transition: all .15s ease-out;
     }
-    .card:hover {
+      .card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(15, 23, 42, .15);
+        box-shadow: 0 10px 30px rgba(15, 23, 42, .15);
     }
+
 
     /* SITE BADGES */
     .badge-site {
       font-size: 0.75rem;
-      text-transform: uppercase;
+        text-transform: uppercase;
       letter-spacing: 0.06em;
       border-radius: 6px;
-      padding: 4px 8px;
+        padding: 4px 8px;
     }
     .site-grailed { background-color: #fbbf24; color: #111827; }
-    .site-mercari_us { background-color: #38bdf8; color: #0f172a; }
+      .site-mercari_us { background-color: #38bdf8; color: #0f172a; }
     .site-depop { background-color: #ef4444; color: #f9fafb; }
     .site-poshmark { background-color: #a855f7; color: #f9fafb; }
-    .site-facebook_marketplace { background-color: #3b82f6; color: #f9fafb; }
+      .site-facebook_marketplace { background-color: #3b82f6; color: #f9fafb; }
+
 
     /* BUTTONS */
     .btn-view {
-      border: 2px solid #009FE3;
+        border: 2px solid #009FE3;
       background-color: #009FE3;
       color: #ffffff;
-      font-weight: 600;
+        font-weight: 600;
     }
     .btn-view:hover {
       background-color: #007bb5;
-      border-color: #007bb5;
+        border-color: #007bb5;
       color: #ffffff;
     }
 
     .btn-bmw-secondary {
       border: 2px solid #0A1A44;
-      background-color: #ffffff;
+        background-color: #ffffff;
       color: #0A1A44;
       font-weight: 600;
     }
-    .btn-bmw-secondary:hover {
+      .btn-bmw-secondary:hover {
       background-color: #0A1A44;
       color: #ffffff;
     }
@@ -89,123 +94,130 @@
        INTRO 1 – MATRIX GATE
        ───────────────────────────────────────── */
     #intro-overlay {
-      position: fixed;
+        position: fixed;
       inset: 0;
       background: #000000;
-      display: flex;
+        display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 9999;
+        z-index: 9999;
       overflow: hidden;
     }
 
+
     #matrix-canvas {
       position: absolute;
-      inset: 0;
+        inset: 0;
       width: 100%;
       height: 100%;
-      display: block;
+        display: block;
       background: #000000;
     }
 
     #intro-center {
-      position: relative;
+        position: relative;
       z-index: 2;
       display: flex;
-      flex-direction: column;
+        flex-direction: column;
       align-items: center;
       gap: 18px;
     }
 
+
     #intro-main-text {
       font-size: clamp(0.9rem, 2vw, 1.3rem);
-      color: #bbf7d0; /* light green */
+        color: #bbf7d0; /* light green */
       letter-spacing: 0.28em;
       text-transform: uppercase;
-      text-shadow:
+        text-shadow:
         0 0 10px rgba(74, 222, 128, 0.8),
         0 0 22px rgba(0, 0, 0, 1);
     }
+
 
     /* ─────────────────────────────────────────
        INTRO 2 – BLACK PS2 BOOT
        ───────────────────────────────────────── */
     #boot-overlay {
       position: fixed;
-      inset: 0;
+        inset: 0;
       background:
         radial-gradient(circle at 10% 0%, rgba(80,90,110,0.18), transparent 55%),
         radial-gradient(circle at 90% 100%, rgba(10,25,55,0.22), transparent 60%),
         #00030A;
-      display: none; /* shown after click */
+        display: none; /* shown after click */
       align-items: center;
       justify-content: center;
-      z-index: 9998;
+        z-index: 9998;
       overflow: hidden;
       opacity: 0;
     }
 
+
     .boot-mist-layer {
-      position: absolute;
+        position: absolute;
       width: 260%;
       height: 260%;
-      background:
+        background:
         radial-gradient(circle at 20% 20%, rgba(255,255,255,0.16), transparent 55%),
         radial-gradient(circle at 80% 60%, rgba(148,163,184,0.12), transparent 60%),
         radial-gradient(circle at 40% 85%, rgba(255,255,255,0.10), transparent 55%);
-      filter: blur(34px);
+        filter: blur(34px);
       animation: drift 40s linear infinite;
       opacity: 0.5;
-      pointer-events: none;
+        pointer-events: none;
     }
     .boot-mist-layer.mist2 {
       animation: drift2 55s linear infinite;
-      opacity: 0.35;
+        opacity: 0.35;
       transform: rotate(12deg);
     }
 
+
     #boot-center {
       position: relative;
-      z-index: 2;
+        z-index: 2;
       display: flex;
       flex-direction: column;
-      align-items: center;
+        align-items: center;
       gap: 20px;
     }
 
     #boot-text-main {
-      font-size: clamp(1.0rem, 2.2vw, 1.6rem);
+        font-size: clamp(1.0rem, 2.2vw, 1.6rem);
       color: #f9fafb;
       letter-spacing: 0.20em;
-      text-transform: uppercase;
+        text-transform: uppercase;
       text-shadow:
         0 0 8px rgba(255,255,255,0.75),
         0 0 22px rgba(0,0,0,1);
     }
 
+
     #boot-loading {
       width: 260px;
-      height: 6px;
+        height: 6px;
       border-radius: 999px;
       background: rgba(148, 163, 184, 0.3);
-      overflow: hidden;
+        overflow: hidden;
     }
 
     #boot-progress {
-      width: 0%;
+        width: 0%;
       height: 100%;
       background: #00A8FF;
-      box-shadow: 0 0 10px #00A8FF;
+        box-shadow: 0 0 10px #00A8FF;
       transition: width 0.1s linear;
     }
 
+
     @keyframes drift {
       0%   { transform: translate3d(-12%, -10%, 0); }
-      50%  { transform: translate3d(8%, 6%, 0); }
+        50%  { transform: translate3d(8%, 6%, 0); }
       100% { transform: translate3d(-12%, -10%, 0); }
     }
     @keyframes drift2 {
-      0%   { transform: translate3d(8%, -8%, 0); }
+        0%   { transform: translate3d(8%, -8%, 0); }
       50%  { transform: translate3d(-10%, 10%, 0); }
       100% { transform: translate3d(8%, -8%, 0); }
     }
@@ -213,48 +225,44 @@
 </head>
 
 <body>
+
 <nav class="navbar navbar-dark mb-4">
   <div class="container-fluid">
-    <a class="navbar-brand mb-0 h1" href="/">
+      <a class="navbar-brand mb-0 h1" href="/">
       Trend<span class="brand-accent">Tracker</span>
     </a>
     <ul class="nav nav-pills">
-      <li class="nav-item">
+        <li class="nav-item">
         <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Search</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link {% if request.path.startswith('/watch') %}active{% endif %}" href="/watch">Watching</a>
+          <a class="nav-link {% if request.path.startswith('/watch') %}active{% endif %}" href="/watch">Watching</a>
       </li>
       <li class="nav-item">
         <a class="nav-link {% if request.path == '/analytics' %}active{% endif %}" href="/analytics">Analytics</a>
       </li>
-      <li class="nav-item">
+        <li class="nav-item">
         <a class="nav-link {% if request.path == '/profile' %}active{% endif %}" href="/profile">Profile</a>
       </li>
     </ul>
   </div>
 </nav>
 
+
 <!-- INTRO 1: MATRIX SCREEN -->
 <div id="intro-overlay">
   <canvas id="matrix-canvas"></canvas>
 
-  <div id="intro-center">
-    <div id="intro-main-text">CLICK ANYWHERE TO BEGIN</div>
-  </div>
+  <div id="intro-center"><div id="intro-main-text">CLICK ANYWHERE TO BEGIN</div></div>
 </div>
+
 
 <!-- INTRO 2: BLACK PS2 BOOT -->
 <div id="boot-overlay">
   <div class="boot-mist-layer"></div>
   <div class="boot-mist-layer mist2"></div>
 
-  <div id="boot-center">
-    <div id="boot-text-main">HELLO</div>
-    <div id="boot-loading">
-      <div id="boot-progress"></div>
-    </div>
-  </div>
+  <div id="boot-center"><div id="boot-text-main">HELLO</div><div id="boot-loading"><div id="boot-progress"></div></div></div>
 
   <!-- PS2 Startup Sound lives here -->
   <audio id="ps2-audio" preload="auto">
@@ -262,47 +270,48 @@
   </audio>
 </div>
 
+
 <div class="container mb-5">
 
   <!-- SEARCH PANEL -->
-  <div class="row mb-4">
-    <div class="col-lg-8 mx-auto">
-      <div class="card p-4">
+  <div class="row mb-4"><div class="col-lg-8 mx-auto"><div class="card p-4">
         <h4 class="mb-3">Search resale marketplaces</h4>
+
 
         <form method="POST">
           <div class="mb-3">
-            <label class="form-label">What are you hunting for?</label>
+              <label class="form-label">What are you hunting for?</label>
             <input
               type="text"
               class="form-control"
-              name="query"
+                name="query"
               placeholder="e.g. vintage Carhartt jacket, BMW Z4M, Y2K hoodie"
               value="{{ query }}"
-              required
+                required
             >
           </div>
 
           <div class="mb-3">
             <label class="form-label">Tags (comma separated)</label>
-            <input
+              <input
               type="text"
               class="form-control"
               name="tags"
-              placeholder="e.g. vintage, red, supreme"
+                placeholder="e.g. vintage, red, supreme"
               value="{{ tags_input or '' }}"
             >
           </div>
 
+
           <div class="mb-3">
-            <label class="form-label">Max price (USD)</label>
+              <label class="form-label">Max price (USD)</label>
             <input
               type="number"
-              step="1"
+                step="1"
               min="0"
               class="form-control"
               name="max_price"
-              placeholder="e.g. 90"
+                placeholder="e.g. 90"
               value="{{ max_price_input or '' }}"
             >
           </div>
@@ -311,10 +320,8 @@
             <label class="form-label">Marketplaces</label>
             <div class="row">
               {% set all_sites = [
-                ('grailed', 'Grailed'),
-                ('mercari_us', 'Mercari US (simulated)'),
-                ('depop', 'Depop (simulated)'),
-                ('poshmark', 'Poshmark (simulated)'),
+                ('grailed', 'Grailed'),('mercari_us', 'Mercari US (simulated)'),
+                ('depop', 'Depop (simulated)'),('poshmark', 'Poshmark (simulated)'),
                 ('facebook_marketplace', 'Facebook Marketplace (simulated)')
               ] %}
               {% for value, label in all_sites %}
@@ -341,77 +348,71 @@
             🔍 Search
           </button>
         </form>
-      </div>
-    </div>
-  </div>
+      </div></div></div>
+
 
   {% if stats %}
   <!-- STATS ROW -->
   <div class="row mb-4">
-    <div class="col-md-3 mb-3">
-      <div class="card p-3">
+    <div class="col-md-3 mb-3"><div class="card p-3">
         <small class="text-secondary text-uppercase">Total listings</small>
-        <h3 class="mt-2">{{ stats.total }}</h3>
-      </div>
-    </div>
+          <h3 class="mt-2">{{ stats.total }}</h3>
+      </div></div>
 
-    <div class="col-md-3 mb-3">
-      <div class="card p-3">
+    <div class="col-md-3 mb-3"><div class="card p-3">
         <small class="text-secondary text-uppercase">Avg price (overall)</small>
         <h3 class="mt-2">
-          {% if stats.avg_price_overall %}
+            {% if stats.avg_price_overall %}
             ${{ "%.2f"|format(stats.avg_price_overall) }}
           {% else %}
             –
           {% endif %}
         </h3>
-      </div>
-    </div>
+      </div></div>
 
-    <div class="col-md-6 mb-3">
-      <div class="card p-3">
+
+    <div class="col-md-6 mb-3"><div class="card p-3">
         <small class="text-secondary text-uppercase">Avg price by site</small>
         <div class="mt-2">
-          {% if stats.avg_price_by_site %}
+            {% if stats.avg_price_by_site %}
             {% for site, avg in stats.avg_price_by_site.items() %}
               <span class="badge bg-secondary me-1">
-                {{ site }}: ${{ "%.2f"|format(avg) }}
+                  {{ site }}: ${{ "%.2f"|format(avg) }}
               </span>
             {% endfor %}
           {% else %}
-            <span class="text-secondary">No price data.</span>
+              <span class="text-secondary">No price data.</span>
           {% endif %}
         </div>
-      </div>
-    </div>
+      </div></div>
   </div>
 
   {% if stats.cheapest %}
-  <div class="row mb-4">
-    <div class="col-lg-8">
-      <div class="card p-3 d-flex flex-wrap justify-content-between align-items-center">
+  <div class="row mb-4"><div class="col-lg-8"><div class="card p-3 d-flex flex-wrap justify-content-between align-items-center">
         <div>
-          <small class="text-secondary text-uppercase">Cheapest listing found</small>
+
+
+            <small class="text-secondary text-uppercase">Cheapest listing found</small>
           <div class="mt-2">
             <strong>{{ stats.cheapest.title }}</strong>
-            <div class="text-secondary small">
+              <div class="text-secondary small">
               Site: {{ stats.cheapest.site }}
             </div>
           </div>
         </div>
         <div class="text-end">
-          <div class="fs-4">
+            <div class="fs-4">
             {{ stats.cheapest.currency }} {{ "%.2f"|format(stats.cheapest.price) }}
           </div>
           {% if stats.cheapest.url %}
-          <a href="{{ stats.cheapest.url }}" target="_blank" class="btn btn-view btn-sm mt-2">
+            <a href="{{ stats.cheapest.url }}" target="_blank" class="btn btn-view btn-sm mt-2">
+
+
             View listing
           </a>
           {% endif %}
         </div>
-      </div>
-    </div>
-  </div>
+      </div></div></div>
   {% endif %}
   {% endif %}
 
@@ -419,33 +420,38 @@
   {% for site, items in grouped_results.items() %}
   <div class="row mb-3">
     <div class="col-12">
-      <h5 class="mb-3">
+        <h5 class="mb-3">
         {% if site == 'grailed' %}Grailed{% endif %}
         {% if site == 'mercari_us' %}Mercari US (simulated){% endif %}
-        {% if site == 'depop' %}Depop (simulated){% endif %}
+
+
+          {% if site == 'depop' %}Depop (simulated){% endif %}
         {% if site == 'poshmark' %}Poshmark (simulated){% endif %}
         {% if site == 'facebook_marketplace' %}Facebook Marketplace (simulated){% endif %}
-        <span class="badge rounded-pill bg-secondary ms-2">{{ items|length }} results</span>
+          <span class="badge rounded-pill bg-secondary ms-2">{{ items|length }} results</span>
       </h5>
     </div>
 
     {% for item in items %}
-    <div class="col-md-6 col-lg-4 mb-3">
-      <div class="card p-3 h-100">
+    <div class="col-md-6 col-lg-4 mb-3"><div class="card p-3 h-100">
 
         <div class="d-flex justify-content-between align-items-start mb-2">
-          <span
+            <span
             class="badge-site
               {% if site == 'grailed' %}site-grailed{% endif %}
-              {% if site == 'mercari_us' %}site-mercari_us{% endif %}
+                {% if site == 'mercari_us' %}site-mercari_us{% endif %}
+                
               {% if site == 'depop' %}site-depop{% endif %}
               {% if site == 'poshmark' %}site-poshmark{% endif %}
-              {% if site == 'facebook_marketplace' %}site-facebook_marketplace{% endif %}
+                {% if site == 'facebook_marketplace' %}site-facebook_marketplace{% endif %}
+
+
+
             "
           >
             {{ site }}
           </span>
-          {% if item.brand %}
+            {% if item.brand %}
             <span class="text-secondary small">
               {{ item.brand }}
             </span>
@@ -454,49 +460,50 @@
 
         <h6 class="mb-2">{{ item.title }}</h6>
 
+
         <div class="mb-2">
-          <strong>
+            <strong>
             {% if item.price is not none %}
               {{ item.currency }} {{ "%.2f"|format(item.price) }}
             {% else %}
-              –
+                –
             {% endif %}
           </strong>
         </div>
 
         <div class="mb-1 text-secondary small">
-          {% if item.size %}Size: {{ item.size }}{% endif %}
+            {% if item.size %}Size: {{ item.size }}{% endif %}
           {% if item.size and item.condition %} · {% endif %}
           {% if item.condition %}Condition: {{ item.condition }}{% endif %}
         </div>
 
+
         {% if item.created_at %}
         <div class="mb-2 text-secondary small">
-          Listed: {{ item.created_at.strftime("%Y-%m-%d") }}
+            Listed: {{ item.created_at.strftime("%Y-%m-%d") }}
         </div>
         {% endif %}
 
         <div class="mt-auto d-flex flex-wrap gap-2 pt-2">
-          {% if item.url %}
+            {% if item.url %}
           <a href="{{ item.url }}" target="_blank" class="btn btn-sm btn-view">
             View
           </a>
           {% endif %}
 
-          <form method="POST" action="/watch_add">
+            <form method="POST" action="/watch_add">
             <input type="hidden" name="title" value="{{ item.title }}">
-            <input type="hidden" name="url" value="{{ item.url }}">
+              <input type="hidden" name="url" value="{{ item.url }}">
             <input type="hidden" name="price" value="{{ item.price }}">
             <input type="hidden" name="currency" value="{{ item.currency }}">
-            <input type="hidden" name="site" value="{{ site }}">
+              <input type="hidden" name="site" value="{{ site }}">
             <button type="submit" class="btn btn-sm btn-bmw-secondary">
-              Add to Watching
+                Add to Watching
             </button>
           </form>
         </div>
 
-      </div>
-    </div>
+      </div></div>
     {% endfor %}
   </div>
   {% endfor %}
@@ -509,73 +516,78 @@
 (function () {
   const INTRO_KEY = "tt_intro_two_stage_v4";
 
-  const introOverlay   = document.getElementById("intro-overlay");
-  const matrixCanvas   = document.getElementById("matrix-canvas");
-  const bootOverlay    = document.getElementById("boot-overlay");
+
+  const introOverlay   = document.getElementById("intro-overlay");const matrixCanvas   = document.getElementById("matrix-canvas");const bootOverlay    = document.getElementById("boot-overlay");
   const bootProgressEl = document.getElementById("boot-progress");
   const bootTextEl     = document.getElementById("boot-text-main");
-  const audio          = document.getElementById("ps2-audio");
+    const audio          = document.getElementById("ps2-audio");
+
 
   if (!introOverlay || !matrixCanvas || !bootOverlay || !bootProgressEl || !bootTextEl || !audio) return;
 
   // Only once per tab session
   if (sessionStorage.getItem(INTRO_KEY) === "1") {
-    introOverlay.style.display = "none";
+      introOverlay.style.display = "none";
     bootOverlay.style.display = "none";
     return;
   }
-  sessionStorage.setItem(INTRO_KEY, "1");
+    sessionStorage.setItem(INTRO_KEY, "1");
+
 
   /* ───────── Matrix Rain: laser sweep then faster readable rain ───────── */
-  const ctx = matrixCanvas.getContext("2d");
-  let width, height, columns, drops;
-  const fontSize = 14;
+  const ctx = matrixCanvas.getContext("2d");let width, height, columns, drops;const fontSize = 14;
 
   function resizeMatrix() {
-    width = matrixCanvas.width  = window.innerWidth;
+      width = matrixCanvas.width  = window.innerWidth;
     height = matrixCanvas.height = window.innerHeight;
     columns = Math.floor(width / fontSize);
-    drops = new Array(columns).fill(0);
+      drops = new Array(columns).fill(0);
   }
   resizeMatrix();
-  window.addEventListener("resize", resizeMatrix);
+    window.addEventListener("resize", resizeMatrix);
 
   let firstPhase = true;
-  let tickCount = 0;
+    let tickCount = 0;
   const LASER_TICKS = 14; // how long laser phase lasts (~1.4s at 100ms)
+
 
   function drawMatrix() {
     // Clear fully so each digit is sharp
-    ctx.fillStyle = "#000000";
+      ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, width, height);
 
-    ctx.fillStyle = "#22c55e";
-    ctx.font = fontSize + "px monospace";
+    ctx.fillStyle = "#22c55e"; ctx.font = fontSize + "px monospace";
 
     // Laser phase = fast drop, rain phase = slower but readable
     const speed = firstPhase ? 3 : 1.2;
 
+
+
+
+
     for (let i = 0; i < drops.length; i++) {
-      const text = Math.random() > 0.5 ? "1" : "0";
+        const text = Math.random() > 0.5 ? "1" : "0";
       const x = i * fontSize;
       const y = drops[i] * fontSize;
 
-      ctx.fillText(text, x, y);
+        ctx.fillText(text, x, y);
 
       if (y > height && Math.random() > 0.98) {
-        drops[i] = 0;
+          drops[i] = 0;
       } else {
         drops[i] += speed;
       }
     }
 
+
     if (firstPhase) {
       tickCount++;
-      if (tickCount >= LASER_TICKS) {
+        if (tickCount >= LASER_TICKS) {
         firstPhase = false;
       }
     }
   }
+
 
   // ~10fps: initial laser feels quick, then rain is a bit faster than before
   setInterval(drawMatrix, 100);
@@ -592,8 +604,7 @@
     // Fade out matrix intro
     introOverlay.style.transition = "opacity .35s ease-out";
     introOverlay.style.opacity = "0";
-    setTimeout(() => {
-      introOverlay.style.display = "none";
+    setTimeout(() => {introOverlay.style.display = "none";
     }, 400);
 
     // Show boot overlay
@@ -626,8 +637,7 @@
     let progress = 0;
     const interval = setInterval(() => {
       progress += 100 / 90; // ~9s at 100ms
-      if (progress >= 100) {
-        progress = 100;
+      if (progress >= 100) {progress = 100;
         clearInterval(interval);
       }
       bootProgressEl.style.width = progress + "%";
@@ -649,4 +659,7 @@
 </script>
 
 </body>
+
+
+
 </html>

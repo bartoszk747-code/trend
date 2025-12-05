@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>TrendTracker – Edit Watch Rule</title>
+    <title>TrendTracker – Edit Watch Rule</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
 
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -12,171 +13,181 @@
 
   <style>
     body {
-      background-color: #e5e7eb;
+        background-color: #e5e7eb;
       color: #111827;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
+
+
     .navbar {
       background: linear-gradient(90deg, #0A1A44, #009FE3);
     }
-    .navbar .nav-link {
+      .navbar .nav-link {
       color: #e5e7eb;
       font-weight: 500;
     }
     .navbar .nav-link.active {
-      background-color: rgba(255,255,255,0.2);
+        background-color: rgba(255,255,255,0.2);
     }
     .brand-accent {
       color: #ffffff;
-      font-weight: 700;
+        font-weight: 700;
     }
+
+
     .card {
       background-color: #ffffff;
-      border-radius: 18px;
+        border-radius: 18px;
       border: 1px solid #d1d5db;
       transition: all .15s ease-out;
     }
     .btn-bmw {
-      border-radius: 999px;
+        border-radius: 999px;
       border: 2px solid #009FE3;
       background-color: #009FE3;
-      color: #ffffff;
+        color: #ffffff;
       font-weight: 600;
       padding-inline: 1.4rem;
     }
-    .btn-bmw:hover {
+      .btn-bmw:hover {
       background-color: #007bb5;
-      border-color: #007bb5;
+        border-color: #007bb5;
       color: #ffffff;
     }
+
+
     .btn-outline-dark-bmw {
-      border-radius: 999px;
+        border-radius: 999px;
       border: 1px solid #111827;
       color: #111827;
-      background-color: #ffffff;
+        background-color: #ffffff;
       font-weight: 500;
       padding-inline: 1.2rem;
     }
-    .btn-outline-dark-bmw:hover {
+      .btn-outline-dark-bmw:hover {
       background-color: #111827;
       color: #ffffff;
     }
   </style>
 </head>
 <body>
+
 <nav class="navbar navbar-dark mb-4">
   <div class="container-fluid">
-    <a class="navbar-brand mb-0 h1" href="/">
+      <a class="navbar-brand mb-0 h1" href="/">
       Trend<span class="brand-accent">Tracker</span>
     </a>
     <ul class="nav nav-pills">
-      <li class="nav-item">
+        <li class="nav-item">
         <a class="nav-link" href="/">Search</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link {% if request.path.startswith('/watch') %}active{% endif %}" href="/watch">Watching</a>
+          <a class="nav-link {% if request.path.startswith('/watch') %}active{% endif %}" href="/watch">Watching</a>
       </li>
       <li class="nav-item">
         <a class="nav-link {% if request.path == '/analytics' %}active{% endif %}" href="/analytics">Analytics</a>
       </li>
-      <li class="nav-item">
+        <li class="nav-item">
         <a class="nav-link {% if request.path == '/profile' %}active{% endif %}" href="/profile">Profile</a>
       </li>
     </ul>
   </div>
 </nav>
 
+
 <div class="container mb-5">
-  <div class="row">
-    <div class="col-lg-8 mx-auto">
-      <div class="card p-4 mb-3">
-        <h4 class="mb-3">Tune your watch rule</h4>
+  <div class="row"><div class="col-lg-8 mx-auto"><div class="card p-4 mb-3">
+          <h4 class="mb-3">Tune your watch rule</h4>
         <p class="text-secondary" style="font-size: 0.9rem;">
-          This started from the listing you liked. Refine the query, tags, and price range,
+            This started from the listing you liked. Refine the query, tags, and price range,
           and choose which marketplaces to track.
         </p>
 
+
         <form method="POST">
           <div class="mb-3">
-            <label class="form-label">Query</label>
+              <label class="form-label">Query</label>
             <input
               type="text"
-              class="form-control"
+                class="form-control"
               name="query"
               value="{{ rule.query }}"
-              required
+                required
             >
           </div>
 
           <div class="mb-3">
             <label class="form-label">Tags (comma separated)</label>
-            <input
+              <input
               type="text"
               class="form-control"
               name="tags"
-              placeholder="e.g. vintage, bmw, z4m"
+                placeholder="e.g. vintage, bmw, z4m"
               value="{{ tags_string }}"
             >
             <div class="form-text">
-              Listings will match if they contain <strong>any</strong> of these in the title, brand, or size.
+                Listings will match if they contain <strong>any</strong> of these in the title, brand, or size.
             </div>
           </div>
 
+
           <div class="mb-3">
-            <label class="form-label">Max price (USD)</label>
+              <label class="form-label">Max price (USD)</label>
             <input
               type="number"
-              step="1"
+                step="1"
               min="0"
               class="form-control"
               name="max_price"
-              value="{{ rule.max_price if rule.max_price is not none }}"
+                value="{{ rule.max_price if rule.max_price is not none }}"
             >
           </div>
 
           <div class="mb-3">
             <label class="form-label">Marketplaces</label>
-            <div class="row">
+              <div class="row">
               {% for value, label in all_sites %}
-              <div class="col-6 col-md-4 mb-2">
-                <div class="form-check">
-                  <input
+              <div class="col-6 col-md-4 mb-2"><div class="form-check">
+                    <input
                     class="form-check-input"
                     type="checkbox"
-                    name="sites"
+                      name="sites"
                     id="edit-site-{{ value }}"
                     value="{{ value }}"
-                    {% if value in rule.sites %}checked{% endif %}
+                      {% if value in rule.sites %}checked{% endif %}
                   >
                   <label class="form-check-label" for="edit-site-{{ value }}">
-                    {{ label }}
+                      {{ label }}
                   </label>
-                </div>
-              </div>
+                </div></div>
               {% endfor %}
             </div>
           </div>
 
+
           <div class="d-flex gap-2 mt-3">
-            <button type="submit" class="btn btn-bmw">
+              <button type="submit" class="btn btn-bmw">
               Save & view matches
             </button>
             <a href="/watch/{{ rule.id }}" class="btn btn-outline-dark-bmw">
-              Cancel
+                Cancel
             </a>
           </div>
-        </form>
-      </div>
+        </form></div>
 
       <div class="card p-3">
-        <p class="text-secondary mb-0" style="font-size: 0.85rem;">
+          <p class="text-secondary mb-0" style="font-size: 0.85rem;">
           Once saved, this rule will also contribute to your analytics dashboards under the Analytics tab.
         </p>
       </div>
-    </div>
-  </div>
+    </div></div>
 </div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
+
+
+
 </html>

@@ -2,80 +2,83 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>TrendTracker – Analytics</title>
+    <title>TrendTracker – Analytics</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
 
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Chart.js -->
+
+      <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     /* DARK BACKGROUND */
     body {
       background-color: #1e293b; /* Medium BMW slate/blue */
-      color: #f9fafb;
+        color: #f9fafb;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
+
     /* NAVBAR */
     .navbar {
-      background: linear-gradient(90deg, #0A1A44, #009FE3);
+        background: linear-gradient(90deg, #0A1A44, #009FE3);
     }
     .navbar .nav-link {
       color: #e5e7eb;
       font-weight: 500;
     }
-    .navbar .nav-link.active {
+      .navbar .nav-link.active {
       background-color: rgba(255,255,255,0.2);
     }
 
     .brand-accent {
       color: white;
-      font-weight: 700;
+        font-weight: 700;
     }
 
-    /* DARK CARDS */
+
+    /* card(dark) */
     .card, .stat-card {
       background-color: #334155; /* Steel blue */
       border-radius: 18px;
-      border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.1);
       color: #f9fafb;
     }
 
     .card:hover {
       box-shadow: 0 10px 30px rgba(15,23,42,0.35);
-      transform: translateY(-1px);
+        transform: translateY(-1px);
       transition: all .12s ease-out;
     }
 
-    /* little pill used in headers */
+
     .pill {
-      display: inline-block;
-      padding: 2px 10px;
+      display: inline-block;padding: 2px 10px;
       border-radius: 999px;
       font-size: 0.75rem;
-      background: rgba(15,23,42,0.8);
+        background: rgba(15,23,42,0.8);
       color: #e5e7eb;
     }
 
     .stat-label {
-      font-size: 0.75rem;
+        font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: #cbd5f5;
+        color: #cbd5f5;
     }
 
     .stat-value {
       font-size: 1.15rem;
-      font-weight: 600;
+        font-weight: 600;
     }
 
     .chevron {
       transition: transform .18s ease-out;
     }
-    .chevron-open {
+      .chevron-open {
       transform: rotate(90deg);
     }
   </style>
@@ -83,90 +86,86 @@
 
 <body>
 
-<!-- NAV -->
+
+<!-- navbar -->
 <nav class="navbar navbar-dark mb-4">
   <div class="container-fluid">
-    <a class="navbar-brand mb-0 h1" href="/">
+      <a class="navbar-brand mb-0 h1" href="/">
       Trend<span class="brand-accent">Tracker</span>
     </a>
     <ul class="nav nav-pills">
       <li class="nav-item">
-        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Search</a>
+          <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Search</a>
       </li>
       <li class="nav-item">
         <a class="nav-link {% if request.path.startswith('/watch') %}active{% endif %}" href="/watch">Watching</a>
       </li>
-      <li class="nav-item">
+        <li class="nav-item">
         <a class="nav-link {% if request.path == '/analytics' %}active{% endif %}" href="/analytics">Analytics</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link {% if request.path == '/profile' %}active{% endif %}" href="/profile">Profile</a>
+          <a class="nav-link {% if request.path == '/profile' %}active{% endif %}" href="/profile">Profile</a>
       </li>
     </ul>
   </div>
 </nav>
 
 
+
 <div class="container mb-5">
 
-  <!-- HEADER -->
-  <div class="row mb-4">
-    <div class="col-lg-10 mx-auto">
-      <div class="stat-card p-4">
-        <h4 class="mb-2">Watchlist Analytics</h4>
+  <!-- heading -->
+    <div class="row mb-4"><div class="col-lg-10 mx-auto"><div class="stat-card p-4"><h4 class="mb-2">Watchlist Analytics</h4>
+
 
         {% if not rules %}
           <p class="text-light mb-0">
             No watch rules yet. Add some on the Watching tab and we’ll start tracking how prices move.
           </p>
         {% else %}
-          <p class="text-light mb-0">
+            <p class="text-light mb-0">
             Click a watch rule below to see detailed stats, price trends, and how listings have moved over time.
           </p>
         {% endif %}
-      </div>
-    </div>
-  </div>
+      </div></div></div>
+
 
   {% if rules %}
-  <!-- ACCORDION OF WATCH RULES -->
-  <div class="row">
-    <div class="col-lg-10 mx-auto">
-      <div class="accordion" id="analyticsAccordion">
+  <!-- watch roll -->
+  <div class="row"><div class="col-lg-10 mx-auto"><div class="accordion" id="analyticsAccordion">
         {% for block in rules %}
         {% set rid = block.id %}
-        <div class="accordion-item mb-3" style="background:none; border:none;">
-          <div class="card">
+          <div class="accordion-item mb-3" style="background:none; border:none;"><div class="card">
             <h2 class="accordion-header" id="heading-{{ rid }}">
-              <button
+                <button
                 class="accordion-button d-flex justify-content-between align-items-center"
                 type="button"
-                data-bs-toggle="collapse"
+                  data-bs-toggle="collapse"
                 data-bs-target="#collapse-{{ rid }}"
                 aria-expanded="false"
-                aria-controls="collapse-{{ rid }}"
+                  aria-controls="collapse-{{ rid }}"
                 style="background-color:#334155; color:#f9fafb; border-radius:18px;"
               >
                 <div class="me-3">
-                  <div class="fw-semibold">
+                    <div class="fw-semibold">
                     {{ block.query }}
                   </div>
                   <div class="text-light small mt-1">
-                    <span class="pill me-1">{{ block.stats.total }} listings</span>
+                      <span class="pill me-1">{{ block.stats.total }} listings</span>
                     {% if block.sites %}
                       <span class="pill me-1">Sites: {{ block.sites|join(", ") }}</span>
                     {% endif %}
-                    {% if block.tags %}
+                      {% if block.tags %}
                       <span class="pill">Tags: {{ block.tags|join(", ") }}</span>
                     {% endif %}
                   </div>
                 </div>
 
-                <div class="ms-auto text-end d-none d-md-block">
+                  <div class="ms-auto text-end d-none d-md-block">
                   <div class="stat-label">Avg price</div>
                   <div class="stat-value">
                     {% if block.stats.avg_price_overall %}
-                      ${{ "%.2f"|format(block.stats.avg_price_overall) }}
+                        ${{ "%.2f"|format(block.stats.avg_price_overall) }}
                     {% else %}
                       –
                     {% endif %}
@@ -174,12 +173,12 @@
                 </div>
 
                 <div class="ms-4 text-end d-none d-md-block">
-                  <div class="stat-label">Lowest</div>
+                    <div class="stat-label">Lowest</div>
                   <div class="stat-value">
                     {% if block.lowest_price %}
                       {{ block.lowest_currency }} {{ "%.2f"|format(block.lowest_price) }}
                     {% else %}
-                      –
+                        –
                     {% endif %}
                   </div>
                 </div>
@@ -188,102 +187,45 @@
               </button>
             </h2>
 
-            <div
-              id="collapse-{{ rid }}"
-              class="accordion-collapse collapse"
-              aria-labelledby="heading-{{ rid }}"
-              data-bs-parent="#analyticsAccordion"
-            >
-              <div class="accordion-body">
+            <div id="collapse-{{ rid }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ rid }}" data-bs-parent="#analyticsAccordion"><div class="accordion-body">
 
-                <!-- little stat strip -->
-                <div class="row mb-3">
-                  <div class="col-md-3 mb-2">
-                    <div class="stat-label">Tracked listings</div>
-                    <div class="stat-value">{{ block.stats.total }}</div>
-                  </div>
-                  <div class="col-md-3 mb-2">
+                  <!-- little stat strip -->
+                <div class="row mb-3"><div class="col-md-3 mb-2">
+                  <div class="stat-label">Tracked listings</div>
+                  <div class="stat-value">{{ block.stats.total }}</div></div><div class="col-md-3 mb-2">
                     <div class="stat-label">Overall avg</div>
-                    <div class="stat-value">
-                      {% if block.stats.avg_price_overall %}
-                        ${{ "%.2f"|format(block.stats.avg_price_overall) }}
-                      {% else %}
-                        –
-                      {% endif %}
-                    </div>
-                  </div>
-                  <div class="col-md-3 mb-2">
-                    <div class="stat-label">Historical avg (DB)</div>
-                    <div class="stat-value">
-                      {% if block.historical_avg %}
-                        ${{ "%.2f"|format(block.historical_avg) }}
-                      {% else %}
-                        –
-                      {% endif %}
-                    </div>
-                  </div>
-                  <div class="col-md-3 mb-2">
-                    <div class="stat-label">Avg change / week</div>
-                    <div class="stat-value">
-                      {% if block.avg_change_per_week is not none %}
-                        {% if block.avg_change_per_week > 0 %}+{% endif %}${{ "%.2f"|format(block.avg_change_per_week) }}
-                      {% else %}
-                        –
-                      {% endif %}
-                    </div>
-                  </div>
-                </div>
+                    <div class="stat-value">{% if block.stats.avg_price_overall %}${{ "%.2f"|format(block.stats.avg_price_overall) }}{% else %}–{% endif %}</div></div><div class="col-md-3 mb-2"><div class="stat-label">Historical avg (DB)</div>
+                    <div class="stat-value">{% if block.historical_avg %}${{ "%.2f"|format(block.historical_avg) }}{% else %}–{% endif %}</div></div><div class="col-md-3 mb-2">
+                      <div class="stat-label">Avg change / week</div><div class="stat-value">{% if block.avg_change_per_week is not none %}{% if block.avg_change_per_week > 0 %}+{% endif %}${{ "%.2f"|format(block.avg_change_per_week) }}{% else %}–{% endif %}
+
+                      </div></div></div>
 
                 <!-- avg by site chips -->
-                <div class="mb-3">
-                  <div class="stat-label mb-1">Avg price by site</div>
-                  {% if block.stats.avg_price_by_site %}
+                  <div class="mb-3">
+               <div class="stat-label mb-1">Avg price by site</div>
+              {% if block.stats.avg_price_by_site %}
                     {% for site, avg in block.stats.avg_price_by_site.items() %}
-                      <span class="pill me-1 mb-1 d-inline-block">
+                        <span class="pill me-1 mb-1 d-inline-block">
                         {{ site }}: ${{ "%.2f"|format(avg) }}
                       </span>
                     {% endfor %}
                   {% else %}
-                    <span class="text-light small">No price data by site yet.</span>
+                      <span class="text-light small">No price data by site yet.</span>
                   {% endif %}
                 </div>
 
-                <!-- CHARTS -->
-                <div class="row">
-                  <div class="col-lg-6 mb-3">
-                    <div class="card p-3">
-                      <h6 class="mb-2">Price trend – main listing</h6>
-                      <p class="text-light small mb-2">
-                        Line + dots for your “main” listing so you can actually read it.
-                      </p>
-                      <canvas id="trendChart-{{ rid }}"></canvas>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 mb-3">
-                    <div class="card p-3">
-                      <h6 class="mb-2">All listing prices</h6>
-                      <p class="text-light small mb-2">
-                        Scatter of everything tracked for this rule – like a mini Bring a Trailer chart.
-                      </p>
-                      <canvas id="scatterChart-{{ rid }}"></canvas>
-                    </div>
-                  </div>
-                </div>
+                <!-- charrts -->
+                <div class="row"><div class="col-lg-6 mb-3"><div class="card p-3"><h6 class="mb-2">Price trend – main listing</h6><p class="text-light small mb-2">Line + dots for your “main” listing so you can actually read it.</p><canvas id="trendChart-{{ rid }}"></canvas></div></div><div class="col-lg-6 mb-3"><div class="card p-3"><h6 class="mb-2">All listing prices</h6><p class="text-light small mb-2">Scatter of everything tracked for this rule – like a mini Bring a Trailer chart.</p><canvas id="scatterChart-{{ rid }}"></canvas></div></div></div>
 
                 {% if not block.trend_points %}
-                <p class="text-light small mb-0">
+                  <p class="text-light small mb-0">
                   No dated listings yet for this rule, so charts are pretty boring right now.
                 </p>
                 {% endif %}
 
-              </div>
-            </div>
-          </div>
-        </div>
+              </div></div></div></div>
         {% endfor %}
-      </div>
-    </div>
-  </div>
+      </div></div></div>
   {% endif %}
 
 </div>
@@ -292,91 +234,99 @@
 <!-- BOOTSTRAP -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+
 <script>
   // all the backend data in one go
-  const ruleBlocks = {{ rules | tojson | safe }};
+    const ruleBlocks = {{ rules | tojson | safe }};
+
 
   // BMW-ish colors
   const bmwLightBlue = "#009FE3";
-  const bmwDarkBlue  = "#0A1A44";
+    const bmwDarkBlue  = "#0A1A44";
   const bmwRed       = "#D40000";
+
 
   document.addEventListener("DOMContentLoaded", () => {
     // toggle little "▶" chevron when you open/close a rule
-    ruleBlocks.forEach(block => {
+      ruleBlocks.forEach(block => {
       const rid = block.id;
       const collapseEl = document.getElementById(`collapse-${rid}`);
-      const chevronEl  = document.getElementById(`chevron-${rid}`);
+        const chevronEl  = document.getElementById(`chevron-${rid}`);
       if (!collapseEl || !chevronEl) return;
 
+
       collapseEl.addEventListener("show.bs.collapse", () => {
-        chevronEl.classList.add("chevron-open");
+          chevronEl.classList.add("chevron-open");
       });
       collapseEl.addEventListener("hide.bs.collapse", () => {
         chevronEl.classList.remove("chevron-open");
       });
     });
 
+
     // build charts per rule
-    ruleBlocks.forEach(block => {
+      ruleBlocks.forEach(block => {
       const rid = block.id;
       const points = (block.trend_points || []).slice();  // clone
 
+
       // sort by date just in case
-      points.sort((a, b) => (a.date > b.date ? 1 : -1));
+        points.sort((a, b) => (a.date > b.date ? 1 : -1));
+
 
       const dates  = points.map(p => p.date.substring(0, 10));
       const prices = points.map(p => p.price);
 
+
       // main listing only (line + dots), other stuff is dots on the other chart
-      const mainData = dates.map((_, idx) => {
+        const mainData = dates.map((_, idx) => {
         const p = points[idx];
         return p.is_main ? p.price : null;
       });
 
+
       // "price trend – main listing"
       const trendCanvas = document.getElementById(`trendChart-${rid}`);
-      if (trendCanvas && points.length > 0) {
+        if (trendCanvas && points.length > 0) {
         new Chart(trendCanvas.getContext("2d"), {
           type: "line",
           data: {
-            labels: dates,
+              labels: dates,
             datasets: [
               {
                 label: "Main listing",
-                data: mainData,
+                  data: mainData,
                 borderColor: bmwLightBlue,
                 backgroundColor: "rgba(0,159,227,0.18)",
-                borderWidth: 2,
+                  borderWidth: 2,
                 tension: 0.25,
                 pointRadius: 4,
                 spanGaps: false,  // don't connect across nulls
               }
             ]
           },
-          options: {
+            options: {
             responsive: true,
             interaction: {
               mode: "nearest",
-              intersect: false,
+                intersect: false,
             },
             plugins: {
               legend: {
-                labels: {
+                  labels: {
                   color: "#e5e7eb"
                 }
               }
             },
             scales: {
-              x: {
+                x: {
                 ticks: {
                   maxRotation: 45,
-                  minRotation: 0,
-                  color: "#cbd5f5",
+                  minRotation: 0,color: "#cbd5f5",
                 }
               },
               y: {
-                beginAtZero: false,
+                  beginAtZero: false,
                 ticks: {
                   color: "#cbd5f5",
                 }
@@ -386,53 +336,48 @@
         });
       }
 
+
       // "all listing prices" – dots only, x-axis = date
-      const scatterCanvas = document.getElementById(`scatterChart-${rid}`);
+        const scatterCanvas = document.getElementById(`scatterChart-${rid}`);
       if (scatterCanvas && points.length > 0) {
         new Chart(scatterCanvas.getContext("2d"), {
-          type: "line",  // line-type but line is off: effectively a scatter
+            type: "line",  // line-type but line is off: effectively a scatter
           data: {
             labels: dates,
             datasets: [{
-              label: "All listing prices",
-              data: prices,
-              borderColor: bmwDarkBlue,
+                label: "All listing prices",
+              data: prices,borderColor: bmwDarkBlue,
               backgroundColor: "rgba(148,163,184,0.80)",
-              borderWidth: 0,
-              pointRadius: 4,
-              showLine: false,   // dots only
+                borderWidth: 0,
+              pointRadius: 4,showLine: false,   // dots only
             }]
           },
           options: {
-            responsive: true,
+              responsive: true,
             interaction: {
               mode: "nearest",
               intersect: false,
             },
-            plugins: {
+              plugins: {
               legend: {
-                labels: {
-                  color: "#e5e7eb"
+                labels: {color: "#e5e7eb"
                 }
               }
             },
             scales: {
-              x: {
-                ticks: {
-                  maxRotation: 45,
-                  minRotation: 0,
+                x: {
+                ticks: { maxRotation: 45,
+                    minRotation: 0,
                   color: "#cbd5f5",
                 }
               },
               y: {
-                beginAtZero: false,
-                title: {
-                  display: true,
-                  text: "Price",
+          beginAtZero: false,
+                title: {display: true,text: "Price",
                   color: "#cbd5f5",
                 },
                 ticks: {
-                  color: "#cbd5f5",
+                    color: "#cbd5f5",
                 }
               }
             }
