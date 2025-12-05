@@ -21,7 +21,7 @@
     }
 
 
-    /* NAVBAR */
+    /* NAV */
     .navbar {
       background: linear-gradient(90deg, #0A1A44, #009FE3);
     }
@@ -38,7 +38,7 @@
     }
 
 
-    /* CARDS */
+    /* CARD*/
     .card {
       background-color: #ffffff;
         border-radius: 18px;
@@ -51,7 +51,7 @@
     }
 
 
-    /* SITE BADGES */
+  
     .badge-site {
       font-size: 0.75rem;
         text-transform: uppercase;
@@ -66,7 +66,7 @@
       .site-facebook_marketplace { background-color: #3b82f6; color: #f9fafb; }
 
 
-    /* BUTTONS */
+    /* BTTN */
     .btn-view {
         border: 2px solid #009FE3;
       background-color: #009FE3;
@@ -90,9 +90,7 @@
       color: #ffffff;
     }
 
-    /* ─────────────────────────────────────────
-       INTRO 1 – MATRIX GATE
-       ───────────────────────────────────────── */
+    /*Matrix*/
     #intro-overlay {
         position: fixed;
       inset: 0;
@@ -135,9 +133,7 @@
     }
 
 
-    /* ─────────────────────────────────────────
-       INTRO 2 – BLACK PS2 BOOT
-       ───────────────────────────────────────── */
+    /*Ps2 intros*/
     #boot-overlay {
       position: fixed;
         inset: 0;
@@ -145,7 +141,7 @@
         radial-gradient(circle at 10% 0%, rgba(80,90,110,0.18), transparent 55%),
         radial-gradient(circle at 90% 100%, rgba(10,25,55,0.22), transparent 60%),
         #00030A;
-        display: none; /* shown after click */
+        display: none; /* click to show */
       align-items: center;
       justify-content: center;
         z-index: 9998;
@@ -249,7 +245,7 @@
 </nav>
 
 
-<!-- INTRO 1: MATRIX SCREEN -->
+<!-- Matrix screen -->
 <div id="intro-overlay">
   <canvas id="matrix-canvas"></canvas>
 
@@ -257,14 +253,14 @@
 </div>
 
 
-<!-- INTRO 2: BLACK PS2 BOOT -->
+<!--Ps2 startup -->
 <div id="boot-overlay">
   <div class="boot-mist-layer"></div>
   <div class="boot-mist-layer mist2"></div>
 
   <div id="boot-center"><div id="boot-text-main">HELLO</div><div id="boot-loading"><div id="boot-progress"></div></div></div>
 
-  <!-- PS2 Startup Sound lives here -->
+  <!-- Ps2 audipo integration -->
   <audio id="ps2-audio" preload="auto">
     <source src="/static/ps2_start_up.mp3" type="audio/mpeg">
   </audio>
@@ -273,7 +269,7 @@
 
 <div class="container mb-5">
 
-  <!-- SEARCH PANEL -->
+  
   <div class="row mb-4"><div class="col-lg-8 mx-auto"><div class="card p-4">
         <h4 class="mb-3">Search resale marketplaces</h4>
 
@@ -352,7 +348,7 @@
 
 
   {% if stats %}
-  <!-- STATS ROW -->
+  <!--Stats-->
   <div class="row mb-4">
     <div class="col-md-3 mb-3"><div class="card p-3">
         <small class="text-secondary text-uppercase">Total listings</small>
@@ -416,7 +412,7 @@
   {% endif %}
   {% endif %}
 
-  <!-- RESULTS BY SITE -->
+  
   {% for site, items in grouped_results.items() %}
   <div class="row mb-3">
     <div class="col-12">
@@ -525,7 +521,7 @@
 
   if (!introOverlay || !matrixCanvas || !bootOverlay || !bootProgressEl || !bootTextEl || !audio) return;
 
-  // Only once per tab session
+  // makeing sure its one time intro
   if (sessionStorage.getItem(INTRO_KEY) === "1") {
       introOverlay.style.display = "none";
     bootOverlay.style.display = "none";
@@ -534,7 +530,7 @@
     sessionStorage.setItem(INTRO_KEY, "1");
 
 
-  /* ───────── Matrix Rain: laser sweep then faster readable rain ───────── */
+  /*Matrix rain introduction*/
   const ctx = matrixCanvas.getContext("2d");let width, height, columns, drops;const fontSize = 14;
 
   function resizeMatrix() {
@@ -548,17 +544,17 @@
 
   let firstPhase = true;
     let tickCount = 0;
-  const LASER_TICKS = 14; // how long laser phase lasts (~1.4s at 100ms)
+  const LASER_TICKS = 14; 
 
 
   function drawMatrix() {
-    // Clear fully so each digit is sharp
+  
       ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, width, height);
 
     ctx.fillStyle = "#22c55e"; ctx.font = fontSize + "px monospace";
 
-    // Laser phase = fast drop, rain phase = slower but readable
+    
     const speed = firstPhase ? 3 : 1.2;
 
 
@@ -589,10 +585,10 @@
   }
 
 
-  // ~10fps: initial laser feels quick, then rain is a bit faster than before
+  
   setInterval(drawMatrix, 100);
 
-  /* ───────── PS2 Boot Screen Logic ───────── */
+  /*Ps2 booting logic*/
 
   let audioStarted = false;
   let bootStarted  = false;
@@ -601,13 +597,13 @@
     if (bootStarted) return;
     bootStarted = true;
 
-    // Fade out matrix intro
+    // Fade out 
     introOverlay.style.transition = "opacity .35s ease-out";
     introOverlay.style.opacity = "0";
     setTimeout(() => {introOverlay.style.display = "none";
     }, 400);
 
-    // Show boot overlay
+  
     bootOverlay.style.display = "flex";
     requestAnimationFrame(() => {
       bootOverlay.style.transition = "opacity .45s ease-out";
@@ -624,7 +620,7 @@
       });
     }
 
-    // HELLO → OPTIMIZING → WELCOME USER...
+    
     bootTextEl.textContent = "HELLO";
     setTimeout(() => {
       bootTextEl.textContent = "OPTIMIZING";
@@ -633,7 +629,7 @@
       bootTextEl.textContent = "WELCOME USER...";
     }, 5000);
 
-    // Loading bar ~9 seconds
+    // Loading bar for 9 seconds
     let progress = 0;
     const interval = setInterval(() => {
       progress += 100 / 90; // ~9s at 100ms
@@ -643,7 +639,7 @@
       bootProgressEl.style.width = progress + "%";
     }, 100);
 
-    // Fade out boot overlay after ~9s
+  
     setTimeout(() => {
       bootOverlay.style.transition = "opacity .6s ease-out";
       bootOverlay.style.opacity = "0";
@@ -653,7 +649,7 @@
     }, 9000);
   }
 
-  // CLICK ANYWHERE TO BEGIN
+ 
   introOverlay.addEventListener("click", startBootSequence);
 })();
 </script>

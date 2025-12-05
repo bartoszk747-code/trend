@@ -6,23 +6,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-  <!-- Bootstrap -->
+  <!-- Botstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 
-      <!-- Chart.js -->
+      <!-- Chart-->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* DARK BACKGROUND */
+    /* Background */
     body {
-      background-color: #1e293b; /* Medium BMW slate/blue */
+      background-color: #1e293b; /* Bmw blue drk*/
         color: #f9fafb;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
 
-    /* NAVBAR */
+    /* Nav*/
     .navbar {
         background: linear-gradient(90deg, #0A1A44, #009FE3);
     }
@@ -40,7 +40,7 @@
     }
 
 
-    /* card(dark) */
+    /* stats dark */
     .card, .stat-card {
       background-color: #334155; /* Steel blue */
       border-radius: 18px;
@@ -87,7 +87,7 @@
 <body>
 
 
-<!-- navbar -->
+<!-- nav-->
 <nav class="navbar navbar-dark mb-4">
   <div class="container-fluid">
       <a class="navbar-brand mb-0 h1" href="/">
@@ -114,7 +114,7 @@
 
 <div class="container mb-5">
 
-  <!-- heading -->
+  <!-- header -->
     <div class="row mb-4"><div class="col-lg-10 mx-auto"><div class="stat-card p-4"><h4 class="mb-2">Watchlist Analytics</h4>
 
 
@@ -131,7 +131,7 @@
 
 
   {% if rules %}
-  <!-- watch roll -->
+  <!-- watch-->
   <div class="row"><div class="col-lg-10 mx-auto"><div class="accordion" id="analyticsAccordion">
         {% for block in rules %}
         {% set rid = block.id %}
@@ -189,7 +189,7 @@
 
             <div id="collapse-{{ rid }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ rid }}" data-bs-parent="#analyticsAccordion"><div class="accordion-body">
 
-                  <!-- little stat strip -->
+                  <!--stats -->
                 <div class="row mb-3"><div class="col-md-3 mb-2">
                   <div class="stat-label">Tracked listings</div>
                   <div class="stat-value">{{ block.stats.total }}</div></div><div class="col-md-3 mb-2">
@@ -200,7 +200,7 @@
 
                       </div></div></div>
 
-                <!-- avg by site chips -->
+                <!-- avg by site-->
                   <div class="mb-3">
                <div class="stat-label mb-1">Avg price by site</div>
               {% if block.stats.avg_price_by_site %}
@@ -214,8 +214,8 @@
                   {% endif %}
                 </div>
 
-                <!-- charrts -->
-                <div class="row"><div class="col-lg-6 mb-3"><div class="card p-3"><h6 class="mb-2">Price trend – main listing</h6><p class="text-light small mb-2">Line + dots for your “main” listing so you can actually read it.</p><canvas id="trendChart-{{ rid }}"></canvas></div></div><div class="col-lg-6 mb-3"><div class="card p-3"><h6 class="mb-2">All listing prices</h6><canvas id="scatterChart-{{ rid }}"></canvas></div></div></div>
+                <!-- charrts-->
+                <div class="row"><div class="col-lg-6 mb-3"><div class="card p-3"><h6 class="mb-2">Price trend – main listing</h6><p class="text-light small mb-2"></p><canvas id="trendChart-{{ rid }}"></canvas></div></div><div class="col-lg-6 mb-3"><div class="card p-3"><h6 class="mb-2">All listing prices</h6><p class="text-light small mb-2">Scatter of everything tracked for this rule</p><canvas id="scatterChart-{{ rid }}"></canvas></div></div></div>
 
                 {% if not block.trend_points %}
                   <p class="text-light small mb-0">
@@ -236,18 +236,18 @@
 
 
 <script>
-  // all the backend data in one go
+  // Backend data
     const ruleBlocks = {{ rules | tojson | safe }};
 
 
-  // BMW-ish colors
+  // color map
   const bmwLightBlue = "#009FE3";
     const bmwDarkBlue  = "#0A1A44";
   const bmwRed       = "#D40000";
 
 
   document.addEventListener("DOMContentLoaded", () => {
-    // toggle little "▶" chevron when you open/close a rule
+
       ruleBlocks.forEach(block => {
       const rid = block.id;
       const collapseEl = document.getElementById(`collapse-${rid}`);
@@ -270,7 +270,7 @@
       const points = (block.trend_points || []).slice();  // clone
 
 
-      // sort by date just in case
+      // sort by date
         points.sort((a, b) => (a.date > b.date ? 1 : -1));
 
 
@@ -278,14 +278,14 @@
       const prices = points.map(p => p.price);
 
 
-      // main listing only (line + dots), other stuff is dots on the other chart
+      // main listing only plt and whisker
         const mainData = dates.map((_, idx) => {
         const p = points[idx];
         return p.is_main ? p.price : null;
       });
 
 
-      // "price trend – main listing"
+      // "price trnd"
       const trendCanvas = document.getElementById(`trendChart-${rid}`);
         if (trendCanvas && points.length > 0) {
         new Chart(trendCanvas.getContext("2d"), {
@@ -301,7 +301,7 @@
                   borderWidth: 2,
                 tension: 0.25,
                 pointRadius: 4,
-                spanGaps: false,  // don't connect across nulls
+                spanGaps: false, 
               }
             ]
           },
@@ -337,11 +337,11 @@
       }
 
 
-      // "all listing prices" – dots only, x-axis = date
+      // "Liusting" – dots only, x-axis = date
         const scatterCanvas = document.getElementById(`scatterChart-${rid}`);
       if (scatterCanvas && points.length > 0) {
         new Chart(scatterCanvas.getContext("2d"), {
-            type: "line",  // line-type but line is off: effectively a scatter
+            type: "line",  
           data: {
             labels: dates,
             datasets: [{
